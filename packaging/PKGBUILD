@@ -1,0 +1,137 @@
+# Maintainer: Manjaro Team
+
+pkgbase=mcp
+pkgname=(
+    'libmcp'
+    'mcp-cli'
+    'mcp-qt'
+    'mcp-qt-classic'
+    'mcp-kcm'
+)
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Manjaro Control Panel"
+arch=('x86_64' 'aarch64')
+url="https://github.com/LordTermor/manjaro-control-panel"
+license=('GPL-3.0-or-later')
+makedepends=(
+    'cmake'
+    'ninja'
+    'git'
+    'extra-cmake-modules'
+    'meson'
+    'vala'
+    'gobject-introspection'
+    'qt6-base'
+    'qt6-declarative'
+    'kirigami'
+    'ki18n'
+    'kcoreaddons'
+    'kauth'
+    'kcmutils'
+    'fmt'
+)
+source=("git+https://github.com/LordTermor/manjaro-control-panel.git")
+sha256sums=('SKIP')
+
+build() {
+    cmake -B build -S manjaro-control-panel \
+        -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DMCP_BUILD_LIB=ON \
+        -DMCP_BUILD_CLI=ON \
+        -DMCP_BUILD_QT=ON \
+        -DMCP_BUILD_QT_CLASSIC=ON \
+        -DMCP_BUILD_KCM=ON
+
+    cmake --build build
+}
+
+package_libmcp() {
+    pkgdesc="Core library for Manjaro Control Panel"
+    depends=(
+        'glib2'
+        'libsigc++-3.0'
+        'libalpm.so'
+        'libsoup3'
+    )
+
+    DESTDIR="$pkgdir" cmake --install build/libmcp
+}
+
+package_mcp-cli() {
+    pkgdesc="CLI tools for Manjaro Control Panel"
+    depends=('libmcp' 'fmt')
+
+    DESTDIR="$pkgdir" cmake --install build/cli
+}
+
+package_mcp-qt() {
+    pkgdesc="Qt/QML standalone app for Manjaro Control Panel"
+    depends=(
+        'libmcp'
+        'qt6-base'
+        'qt6-declarative'
+        'kirigami'
+        'ki18n'
+        'kcoreaddons'
+        'kauth'
+        'fmt'
+    )
+
+    # Install mcp-qt binary
+    install -Dm755 build/bin/mcp-qt "$pkgdir/usr/bin/mcp-qt"
+
+    # Install shared libraries
+    DESTDIR="$pkgdir" cmake --install build/mcp-qt/common
+    DESTDIR="$pkgdir" cmake --install build/mcp-qt/modules
+
+    # Install transaction agent
+    install -Dm755 build/bin/mcp-transaction-agent "$pkgdir/usr/bin/mcp-transaction-agent"
+
+    # Install icon
+    install -Dm644 manjaro-control-panel/mcp-qt/data/assets/icon.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/mcp.svg"
+}
+
+package_mcp-qt-classic() {
+    pkgdesc="Qt Widgets classic app for Manjaro Control Panel"
+    depends=(
+        'libmcp'
+        'qt6-base'
+        'qt6-declarative'
+        'kirigami'
+        'ki18n'
+        'kcoreaddons'
+        'kauth'
+        'fmt'
+    )
+
+    # Install mcp-qt-classic binary
+    install -Dm755 build/bin/mcp-qt-classic "$pkgdir/usr/bin/mcp-qt-classic"
+
+    # Shared libs are provided by mcp-qt package, so this is a minimal install
+}
+
+package_mcp-kcm() {
+    pkgdesc="KDE System Settings modules for Manjaro Control Panel"
+    depends=(
+        'libmcp'
+        'qt6-base'
+        'qt6-declarative'
+        'kirigami'
+        'ki18n'
+        'kcoreaddons'
+        'kauth'
+        'kcmutils'
+        'systemsettings'
+        'fmt'
+    )
+
+    # Install KCM plugin
+    DESTDIR="$pkgdir" cmake --install build/mcp-qt/modules/kernel/kcm
+
+    # Install category file
+    install -Dm644 manjaro-control-panel/mcp-qt/data/categories/settings-system-administration-mcp.desktop \
+        "$pkgdir/usr/share/kservices6/settings-system-administration-mcp.desktop"
+}
