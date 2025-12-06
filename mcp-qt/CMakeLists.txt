@@ -40,6 +40,6 @@ if(MCP_BUILD_KCM)
 endif()
 
 # Install MCP icon for application and category
-install(FILES app/assets/icon.svg
+install(FILES data/assets/icon.svg
         DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps
         RENAME mcp.svg)
