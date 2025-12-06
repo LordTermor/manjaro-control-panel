@@ -1,0 +1,21 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "agrinev@manjaro.org",
+                "Name": "Artem Grinev"
+            }
+        ],
+        "Description": "Manage and install Manjaro Linux kernels",
+        "FormFactors": [
+            "desktop"
+        ],
+        "Icon": "yast-kernel",
+        "License": "GPL-3.0-or-later",
+        "Name": "Kernel",
+        "Version": "1.0",
+        "Website": "https://manjaro.org"
+    },
+    "X-KDE-Keywords": "kernel,linux,version,install,remove,update",
+    "X-KDE-System-Settings-Parent-Category": "system-administration-mcp"
+}

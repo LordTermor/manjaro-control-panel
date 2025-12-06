@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Manjaro Control Panel
+Name[en_US]=Manjaro Control Panel
+Comment=Manjaro System Settings
+Comment[en_US]=Manjaro System Settings
+Exec=/usr/bin/mcp-qt
+Icon=mcp
+Terminal=false
+StartupNotify=true
+Categories=Settings

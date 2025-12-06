@@ -1,0 +1,47 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import org.kde.kirigami as Kirigami
+
+Kirigami.OverlaySheet {
+    id: root
+
+    property var majorVersion
+    property var minorVersion
+    property string text: ""
+
+    header: Kirigami.Heading {
+        textFormat: Text.RichText
+        text: qsTr(`${root.majorVersion}.${root.minorVersion} Changelog ― by <a href='https://kernelnewbies.org'>Linux Kernel Newbies</a>`)
+        
+        onLinkActivated: Qt.openUrlExternally(link)
+    }
+
+    BusyIndicator {
+        id: loadingProgressBar
+        
+        visible: root.text.length === 0
+    }
+
+    TextArea {
+        id: changelogText
+        
+        implicitWidth: root.width * 0.8
+        rightPadding: 20
+        
+        background: Item {}
+        font.pointSize: 9
+        readOnly: true
+        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        textFormat: Text.RichText
+        text: root.text
+        
+        onLinkActivated: {
+            if (link.toString().startsWith("#")) {
+                return
+            }
+
+            Qt.openUrlExternally(link)
+        }
+    }
+}

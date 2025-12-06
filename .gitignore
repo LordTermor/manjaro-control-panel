@@ -1,0 +1,42 @@
+# Build directories
+build/
+_deps/
+CMakeFiles/
+
+# CMake generated files
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+install_manifest.txt
+*.ninja
+.ninja_*
+
+# FetchContent dependencies (downloaded at build time)
+libpamac-cpp/
+
+# IDE/Editor
+.vscode/
+.cache/
+*.swp
+*.swo
+*~
+
+# Qt generated
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.qmlc
+*.jsc
+
+# Compiled objects
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# Debug/release directories
+debug/
+release/

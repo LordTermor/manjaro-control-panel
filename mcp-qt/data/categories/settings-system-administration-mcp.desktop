@@ -1,0 +1,30 @@
+[Desktop Entry]
+Type=Service
+X-KDE-System-Settings-Category=system-administration-mcp
+X-KDE-System-Settings-Parent-Category=system-administration
+X-KDE-Weight=10
+Icon=mcp
+
+Name=Manjaro Control Panel
+Name[bg_BG]=Контролен панел на Manjaro
+Name[ca]=Tauler de control del Manjaro
+Name[da]=Manjaro kontrolpanel
+Name[de]=Manjaro-Kontrollfeld
+Name[el]=Πίνακας ελέγχου Manjaro
+Name[es]=Panel de control de Manjaro
+Name[fi]=Manjaron hallintapaneeli
+Name[fr]=Panneau de configuration Manjaro
+Name[hu]=Manjaro vezérlőpult
+Name[it]=Pannello di controllo di Manjaro
+Name[ja]=Manjaro コントロールパネル
+Name[ko]=Manjaro 제어판
+Name[nl]=Manjaro configuratiescherm
+Name[pl]=Panel sterowania Manjaro
+Name[pt_BR]=Painel de controle do Manjaro
+Name[ru]=Панель управления Manjaro
+Name[sl]=Nadzorna plošča Manjaro
+Name[sv]=Manjaro inställningspanel
+Name[tr]=Manjaro Denetim Masası
+Name[uk]=Панель керування Manjaro
+Name[zh_CN]=Manjaro 控制面板
+Name[zh_TW]=Manjaro 控制台

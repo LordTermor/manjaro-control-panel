@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/kernel-page">
+        <file>ui/View.qml</file>
+        <file>ui/KernelListView.qml</file>
+        <file>ui/KernelDelegate.qml</file>
+        <file>ui/ChangelogSheet.qml</file>
+        <file>ui/standalone_main.qml</file>
+        <file>ui/SelectedKernels.qml</file>
+        <file>ui/About.qml</file>
+    </qresource>
+    <qresource prefix="/assets">
+        <file alias="icon.svg">../app/assets/icon.svg</file>
+        <file alias="mascot.svg">../app/assets/mascot.svg</file>
+    </qresource>
+</RCC>
