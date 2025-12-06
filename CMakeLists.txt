@@ -38,11 +38,12 @@ set(MCP_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 include(FetchContent)
 include(GNUInstallDirs)
 
-# libpamac-cpp - C++ wrapper for libpamac
+# libpamac-cpp - C++ wrapper for libpamac (bundled, not installed to system)
 FetchContent_Declare(
     libpamac-cpp
     GIT_REPOSITORY https://github.com/LordTermor/libpamac-cpp.git
     GIT_TAG main
+    EXCLUDE_FROM_ALL
 )
 
 # Build libpamac-cpp as a static library with bundled libpamac

@@ -10,15 +10,19 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0 gobject-2.0 gio-2.0)
 pkg_check_modules(SIGCXX REQUIRED IMPORTED_TARGET sigc++-3.0)
 
-# libcoro - C++20 coroutine library
+# libcoro - C++20 coroutine library (bundled static, not installed to system)
 FetchContent_Declare(
     libcoro
     GIT_REPOSITORY https://github.com/jbaldwin/libcoro.git
     GIT_TAG f671edb4cb66276fa1c2f61d70c4d5a8b18c4076
+    EXCLUDE_FROM_ALL
 )
 
+set(LIBCORO_BUILD_SHARED_LIBS OFF CACHE BOOL "Build libcoro as static library" FORCE)
 set(LIBCORO_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LIBCORO_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LIBCORO_FEATURE_NETWORKING OFF CACHE BOOL "Disable networking (not needed)" FORCE)
+set(LIBCORO_FEATURE_TLS OFF CACHE BOOL "Disable TLS (not needed)" FORCE)
 
 FetchContent_MakeAvailable(libcoro)
 
