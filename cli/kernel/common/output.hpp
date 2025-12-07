@@ -35,7 +35,6 @@ public:
     void set_color_enabled(bool enabled) { m_use_color = enabled; }
     [[nodiscard]] bool color_enabled() const { return m_use_color; }
 
-    /// Print a section header
     void header(std::string_view title) const {
         if (m_use_color) {
             fmt::print("\n{} {}\n",
@@ -49,7 +48,6 @@ public:
         }
     }
 
-    /// Print an error message
     void error(std::string_view message) const {
         if (m_use_color) {
             fmt::print(stderr, "{} {}\n",
@@ -60,7 +58,6 @@ public:
         }
     }
 
-    /// Print a success message
     void success(std::string_view message) const {
         if (m_use_color) {
             fmt::print("{} {}\n",
@@ -71,7 +68,6 @@ public:
         }
     }
 
-    /// Print an info message
     void info(std::string_view message) const {
         if (m_use_color) {
             fmt::print("{} {}\n",
@@ -82,12 +78,10 @@ public:
         }
     }
 
-    /// Print raw text
     void print(std::string_view text) const {
         fmt::print("{}", text);
     }
 
-    /// Print with newline
     void println(std::string_view text = "") const {
         fmt::print("{}\n", text);
     }

@@ -21,9 +21,6 @@ namespace mcp::cli::kernel {
 
 using namespace mcp::kernel;
 
-/**
- * Command to show detailed information about a specific kernel.
- */
 class InfoCommand : public Command {
     std::string m_package_name;
 

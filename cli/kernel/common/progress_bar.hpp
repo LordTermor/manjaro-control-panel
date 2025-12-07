@@ -29,10 +29,7 @@
 
 namespace mcp::cli {
 
-/**
- * Unicode block characters for progress bar rendering.
- * Uses 8 sub-block states for smooth animation.
- */
+// 8 sub-block states for smooth progress animation
 namespace progress_chars {
 
 inline constexpr std::string_view filled = "█";
@@ -56,10 +53,6 @@ inline constexpr std::string_view empty = "░";
 
 } // namespace progress_chars
 
-/**
- * Abstract palette for progress bar styling.
- * Encapsulates all formatting decisions to eliminate conditionals.
- */
 struct ProgressPalette {
     virtual ~ProgressPalette() = default;
     
@@ -73,7 +66,6 @@ struct ProgressPalette {
     virtual void print_error(std::string_view sym, std::string_view msg) const = 0;
 };
 
-/// Colorful palette with ANSI colors
 struct ColorfulPalette final : ProgressPalette {
     void print_label(std::string_view label) const override {
         fmt::print("{} ", fmt::styled(label, fmt::fg(fmt::color::cyan)));
@@ -112,7 +104,6 @@ struct ColorfulPalette final : ProgressPalette {
     }
 };
 
-/// Black & white palette - plain text output
 struct BwPalette final : ProgressPalette {
     void print_label(std::string_view label) const override {
         fmt::print("{} ", label);
@@ -147,7 +138,6 @@ struct BwPalette final : ProgressPalette {
     }
 };
 
-/// Factory to create appropriate palette based on terminal capabilities
 inline std::unique_ptr<ProgressPalette> make_palette(bool use_color) {
     if (use_color) {
         return std::make_unique<ColorfulPalette>();
@@ -159,23 +149,6 @@ inline std::unique_ptr<ProgressPalette> make_palette() {
     return make_palette(isatty(fileno(stdout)) != 0);
 }
 
-/**
- * Terminal progress bar with smooth Unicode rendering.
- * 
- * Features:
- * - Smooth progress with 8 sub-block states per character
- * - Configurable width, colors, and labels
- * - ETA calculation
- * - Spinner for indeterminate progress
- * 
- * Usage:
- *   ProgressBar bar("Downloading", 40);
- *   for (int i = 0; i <= 100; ++i) {
- *       bar.update(i, 100, fmt::format("file_{}.pkg", i));
- *       std::this_thread::sleep_for(50ms);
- *   }
- *   bar.finish();
- */
 class ProgressBar {
     std::string m_label;
     std::string m_status;

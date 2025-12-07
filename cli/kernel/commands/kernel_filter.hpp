@@ -59,16 +59,10 @@ inline bool is_actual_kernel(const mcp::kernel::Kernel& k) {
     return false;
 }
 
-/**
- * Filter a vector of kernels to actual kernels only.
- */
 inline void filter_actual_kernels(std::vector<mcp::kernel::Kernel>& kernels) {
     std::erase_if(kernels, [](const auto& k) { return !is_actual_kernel(k); });
 }
 
-/**
- * Filter a vector of kernels to installed only.
- */
 inline void filter_installed(std::vector<mcp::kernel::Kernel>& kernels) {
     std::erase_if(kernels, [](const auto& k) { return !k.is_installed(); });
 }

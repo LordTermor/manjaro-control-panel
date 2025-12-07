@@ -21,19 +21,14 @@ namespace mcp::cli::kernel {
 
 using mcp::kernel::Kernel;
 
-/**
- * Formatting utilities for kernel display.
- */
 class KernelFormatter {
 public:
-    /// Get the display style for a kernel name
     static fmt::text_style name_style(const Kernel& k) {
         if (k.flags.in_use) return fmt::fg(fmt::color::cyan);
         if (k.flags.installed) return fmt::fg(fmt::color::green);
         return fmt::text_style();
     }
 
-    /// Get the row prefix for a kernel (e.g., running indicator)
     static std::string row_prefix(const Kernel& k) {
         if (k.flags.in_use && out().color_enabled()) {
             return fmt::format("{} ", fmt::styled(symbol::running, fmt::fg(fmt::color::green)));
@@ -43,7 +38,6 @@ public:
         return "";
     }
 
-    /// Format a badge
     static std::string badge(std::string_view text, fmt::color color) {
         if (out().color_enabled()) {
             return fmt::format("{}", fmt::styled(fmt::format("[{}]", text), fmt::fg(color)));
@@ -51,7 +45,6 @@ public:
         return fmt::format("[{}]", text);
     }
 
-    /// Format status badges for a kernel
     static std::string badges(const Kernel& k) {
         std::string result;
 
@@ -80,7 +73,6 @@ public:
         return result;
     }
 
-    /// Get version string for display
     static std::string version_string(const Kernel& k) {
         if (!k.available_version.empty()) {
             return k.available_version;
@@ -88,7 +80,6 @@ public:
         return k.version.to_string();
     }
 
-    /// Print detailed kernel information
     static void print_detail(const Kernel& k) {
         auto& o = out();
 

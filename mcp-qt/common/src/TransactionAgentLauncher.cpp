@@ -18,13 +18,10 @@ TransactionAgentLauncher::TransactionAgentLauncher(QObject* parent)
     : QObject(parent)
     , m_process(new QProcess(this))
 {
-    // Find agent executable - try multiple locations
-    
-    // 1. Try in PATH
+    // Try multiple locations for agent executable
     m_agentPath = QStandardPaths::findExecutable("mcp-transaction-agent");
     
     if (m_agentPath.isEmpty()) {
-        // 2. Try build directory relative to application (for development)
         QString buildPath = QCoreApplication::applicationDirPath() + "/../mcp/transaction-agent/mcp-transaction-agent";
         if (QFile::exists(buildPath)) {
             m_agentPath = buildPath;
@@ -32,7 +29,6 @@ TransactionAgentLauncher::TransactionAgentLauncher(QObject* parent)
     }
     
     if (m_agentPath.isEmpty()) {
-        // 3. Try installed location from compile-time define
         QString installedPath = QStringLiteral(MCP_TRANSACTION_AGENT_PATH);
         if (QFile::exists(installedPath)) {
             m_agentPath = installedPath;
@@ -45,7 +41,6 @@ TransactionAgentLauncher::TransactionAgentLauncher(QObject* parent)
         qInfo() << "Found transaction agent at:" << m_agentPath;
     }
 
-    // Connect process signals
     connect(m_process, &QProcess::started,
             this, &TransactionAgentLauncher::started);
     

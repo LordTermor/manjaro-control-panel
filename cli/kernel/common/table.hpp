@@ -78,31 +78,26 @@ class Table {
     size_t m_prefix_width = 2;
 
 public:
-    /// Add a column definition
     Table& add_column(std::string header, Align align = Align::Left, size_t width = 0) {
         m_columns.push_back({std::move(header), width, align});
         return *this;
     }
 
-    /// Add a data row
     Table& add_row(std::vector<Cell> cells, std::string prefix = "") {
         m_rows.push_back({std::move(cells), std::move(prefix)});
         return *this;
     }
 
-    /// Add a separator row
     Table& add_separator() {
         m_rows.push_back({});
         return *this;
     }
 
-    /// Set prefix column width
     Table& set_prefix_width(size_t width) {
         m_prefix_width = width;
         return *this;
     }
 
-    /// Calculate column widths based on content
     void auto_size() {
         for (size_t i = 0; i < m_columns.size(); ++i) {
             if (m_columns[i].width == 0) {
@@ -117,7 +112,6 @@ public:
         }
     }
 
-    /// Print the table header
     void print_header() const {
         fmt::print("{}", std::string(m_prefix_width, ' '));
         
@@ -140,7 +134,6 @@ public:
         print_separator();
     }
 
-    /// Print separator line
     void print_separator() const {
         size_t total = m_prefix_width;
         for (size_t i = 0; i < m_columns.size(); ++i) {
@@ -164,7 +157,6 @@ public:
         }
     }
 
-    /// Print all rows
     void print_rows() const {
         for (const auto& row : m_rows) {
             if (row.cells.empty()) {
@@ -172,7 +164,6 @@ public:
                 continue;
             }
 
-            // Print prefix
             if (!row.prefix.empty()) {
                 fmt::print("{}", row.prefix);
                 // Assume prefix contains 2 visible characters (e.g., "▶ ")
@@ -183,7 +174,6 @@ public:
                 fmt::print("{}", std::string(m_prefix_width, ' '));
             }
 
-            // Print cells
             for (size_t i = 0; i < m_columns.size(); ++i) {
                 if (i < row.cells.size()) {
                     const auto& cell = row.cells[i];
@@ -206,14 +196,12 @@ public:
         }
     }
 
-    /// Print complete table
     void print() const {
         print_header();
         print_rows();
     }
 
 private:
-    /// Format a cell value with alignment using fmt's native formatting
     [[nodiscard]] static std::string format_cell(std::string_view text, size_t width, Align align) {
         switch (align) {
             case Align::Left:

@@ -17,9 +17,6 @@ namespace mcp::cli::kernel {
 
 using namespace mcp::kernel;
 
-/**
- * Command to show information about the currently running kernel.
- */
 class RunningCommand : public Command {
 public:
     [[nodiscard]] int execute() override {

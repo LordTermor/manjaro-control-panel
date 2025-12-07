@@ -50,7 +50,6 @@ private:
     std::vector<mcp::kernel::Kernel> m_list;
     std::vector<mcp::kernel::Kernel> m_filteredList;
 
-    // QAbstractItemModel interface
 public:
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;

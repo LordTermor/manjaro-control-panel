@@ -1,3 +1,9 @@
+/* === This file is part of MCP ===
+ *
+ *   SPDX-FileCopyrightText: 2022-2025 Artem Grinev <agrinev@manjaro.org>
+ *   SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ */
 #include "KernelKCModule.h"
 #include "../KernelViewModel.h"
 #include "VersionInfo.h"

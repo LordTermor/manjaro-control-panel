@@ -9,9 +9,13 @@
 
 #include <string_view>
 
+/*
+ * Unicode symbols for CLI visual output.
+ * Provides consistent glyphs for status indicators, progress, and decorations.
+ */
+
 namespace mcp::cli {
 
-/// Unicode symbols for visual output
 namespace symbol {
 
 inline constexpr std::string_view check   = "✓";

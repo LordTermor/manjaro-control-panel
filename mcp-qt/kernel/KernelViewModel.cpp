@@ -12,13 +12,11 @@ namespace mcp::qt::kernel {
 
 void KernelViewModel::init()
 {
-    // Connect transaction launcher signals
     connect(&m_transactionLauncher, &common::TransactionAgentLauncher::finished, this, 
         [this](bool success, int exitCode) {
             Q_UNUSED(exitCode);
             
             if (success) {
-                // Refresh file database after successful transaction
                 auto db_result = pamac::Database::instance();
                 if (db_result) {
                     db_result->get().refresh_tmp_files_dbs();
@@ -26,9 +24,6 @@ void KernelViewModel::init()
             }
             
             setCurrentTransactionKernelName(QString{});
-            
-            // Refresh kernel list after transaction (success or failure)
-            // to show updated installation status
             fetchAndUpdateKernels();
         });
 
@@ -44,12 +39,10 @@ void KernelViewModel::installKernel(const QString &pkgName)
 {
     setCurrentTransactionKernelName(pkgName);
     
-    // Build package list: kernel + headers
     QStringList packages;
     packages << pkgName;
     packages << (pkgName + "-headers");
     
-    // Launch transaction agent
     m_transactionLauncher.installPackages(packages);
 }
 
@@ -57,12 +50,10 @@ void KernelViewModel::removeKernel(const QString &pkgName)
 {
     setCurrentTransactionKernelName(pkgName);
     
-    // Build package list: kernel + headers
     QStringList packages;
     packages << pkgName;
     packages << (pkgName + "-headers");
     
-    // Launch transaction agent (force=false, don't remove running kernel)
     m_transactionLauncher.removePackages(packages, false);
 }
 
@@ -96,7 +87,6 @@ QVariantMap KernelViewModel::recommendedKernelData() const
 
 void KernelViewModel::fetchAndUpdateKernels()
 {
-    // Fetch kernels with progress callback
     auto progress_callback = [this](int current, int total, const std::string& kernel_name) {
         Q_EMIT fetchProgress(current, total, QString::fromStdString(kernel_name));
     };
@@ -110,10 +100,8 @@ void KernelViewModel::fetchAndUpdateKernels()
 
     auto kernels_copy = *result;
     
-    // Queue the update to happen on the main thread
     QMetaObject::invokeMethod(
         this, [this, kernels_copy]() {
-            // Extract in-use and recommended kernels
             QVariantMap newInUseData;
             QVariantMap newRecommendedData;
             
@@ -142,7 +130,6 @@ void KernelViewModel::fetchAndUpdateKernels()
                 }
             }
 
-            // Update kernel data if changed
             bool changed = false;
             if (m_inUseKernelData != newInUseData) {
                 m_inUseKernelData = newInUseData;
@@ -157,7 +144,6 @@ void KernelViewModel::fetchAndUpdateKernels()
                 Q_EMIT kernelsDataChanged();
             }
 
-            // Update model (this will trigger UI updates for the main list)
             m_model.setKernels(kernels_copy);
         }, ::Qt::QueuedConnection);
 }

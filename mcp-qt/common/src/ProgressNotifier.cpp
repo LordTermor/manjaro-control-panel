@@ -17,10 +17,8 @@ ProgressNotifier::~ProgressNotifier()
 
 void ProgressNotifier::connect_transaction(pamac::Transaction& transaction)
 {
-    // Disconnect any existing connections
     disconnect_transaction();
 
-    // Connect to pamac transaction signals
     m_connections.push_back(
         transaction.signal_emit_action.connect([this](const std::string& action) {
             QMetaObject::invokeMethod(

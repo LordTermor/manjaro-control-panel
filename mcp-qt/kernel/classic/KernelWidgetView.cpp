@@ -41,11 +41,9 @@ void KernelWidgetView::setupUi()
     mainLayout->setContentsMargins(12, 12, 12, 12);
     mainLayout->setSpacing(12);
     
-    // === Top section: Current and Recommended kernels ===
     auto* topLayout = new QHBoxLayout();
     topLayout->setSpacing(12);
     
-    // In-Use Kernel Card (compact, horizontal layout with button on right)
     m_inUseCard = new QGroupBox(tr("Current"), this);
     auto* inUseLayout = new QHBoxLayout(m_inUseCard);
     inUseLayout->setSpacing(8);
@@ -72,7 +70,6 @@ void KernelWidgetView::setupUi()
     
     topLayout->addWidget(m_inUseCard);
     
-    // Recommended Kernel Card (compact, horizontal layout with button on right)
     m_recommendedCard = new QGroupBox(tr("Recommended"), this);
     auto* recommendedLayout = new QHBoxLayout(m_recommendedCard);
     recommendedLayout->setSpacing(8);
@@ -98,13 +95,11 @@ void KernelWidgetView::setupUi()
     
     mainLayout->addLayout(topLayout);
     
-    // === Separator ===
     auto* separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
     
-    // === Kernel Table ===
     auto* tableLabel = new QLabel(tr("Available Kernels"), this);
     QFont tableFont = tableLabel->font();
     tableFont.setBold(true);
@@ -129,7 +124,6 @@ void KernelWidgetView::setupUi()
     m_kernelTable->setAlternatingRowColors(true);
     mainLayout->addWidget(m_kernelTable, 1);
     
-    // === Status Bar ===
     auto* statusLayout = new QHBoxLayout();
     m_statusLabel = new QLabel(tr("Ready"), this);
     m_progressBar = new QProgressBar(this);
@@ -143,25 +137,21 @@ void KernelWidgetView::setupUi()
 
 void KernelWidgetView::setupConnections()
 {
-    // ViewModel signals
     connect(m_viewModel, &KernelViewModel::kernelsDataChanged,
             this, &KernelWidgetView::onKernelsDataChanged);
     connect(m_viewModel, &KernelViewModel::fetchProgress,
             this, &KernelWidgetView::onFetchProgress);
     
-    // Model changes
     connect(m_viewModel->model(), &QAbstractItemModel::modelReset,
             this, &KernelWidgetView::refreshKernelTable);
     connect(m_viewModel->model(), &QAbstractItemModel::dataChanged,
             this, &KernelWidgetView::refreshKernelTable);
     
-    // Top card action buttons
     connect(m_recommendedActionBtn, &QPushButton::clicked, this, &KernelWidgetView::onInstallClicked);
 }
 
 void KernelWidgetView::onKernelsDataChanged()
 {
-    // Update In-Use card
     QVariantMap inUseData = m_viewModel->inUseKernelData();
     if (!inUseData.isEmpty()) {
         m_inUseName->setText(inUseData.value("name").toString());
@@ -169,12 +159,10 @@ void KernelWidgetView::onKernelsDataChanged()
         QString version = inUseData.value("version").toString();
         QString changelogUrl = inUseData.value("changelogUrl").toString();
         
-        // Build tags
         QStringList tags;
         if (inUseData.value("isLTS").toBool()) tags << "LTS";
         if (inUseData.value("isRealTime").toBool()) tags << "Real-Time";
         
-        // Format: Version | Changelog | Tags
         QString infoText = version;
         if (!changelogUrl.isEmpty()) {
             infoText += QString(" | <a href=\"%1\">Changelog</a>").arg(changelogUrl);
@@ -191,7 +179,6 @@ void KernelWidgetView::onKernelsDataChanged()
         m_inUseCard->setVisible(false);
     }
     
-    // Update Recommended card
     QVariantMap recommendedData = m_viewModel->recommendedKernelData();
     if (!recommendedData.isEmpty()) {
         m_recommendedName->setText(recommendedData.value("name").toString());
@@ -199,12 +186,10 @@ void KernelWidgetView::onKernelsDataChanged()
         QString version = recommendedData.value("version").toString();
         QString changelogUrl = recommendedData.value("changelogUrl").toString();
         
-        // Build tags
         QStringList tags;
         if (recommendedData.value("isLTS").toBool()) tags << "LTS";
         if (recommendedData.value("isRealTime").toBool()) tags << "Real-Time";
         
-        // Format: Version | Changelog | Tags
         QString infoText = version;
         if (!changelogUrl.isEmpty()) {
             infoText += QString(" | <a href=\"%1\">Changelog</a>").arg(changelogUrl);

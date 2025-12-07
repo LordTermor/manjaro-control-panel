@@ -77,22 +77,18 @@ void KernelListModel::setList(const std::vector<mcp::kernel::Kernel> &newList)
 
     m_list = newList;
 
-    // First partition: in-use kernels first
     auto installedEnd = std::partition(m_list.begin(), m_list.end(), [](const auto &a) {
         return a.is_in_use();
     });
     
-    // Second partition: other installed kernels
     auto ltsStart = std::partition(installedEnd, m_list.end(), [](const auto &a) {
         return a.is_installed() && !a.is_in_use();
     });
     
-    // Third partition: LTS kernels (non-installed)
     auto othersStart = std::partition(ltsStart, m_list.end(), [](const auto &a) {
         return !a.is_installed() && a.is_lts();
     });
     
-    // Sort each section by version (descending)
     std::sort(ltsStart, othersStart, [](const auto &a, const auto &b) {
         return a.version > b.version;
     });
@@ -100,7 +96,6 @@ void KernelListModel::setList(const std::vector<mcp::kernel::Kernel> &newList)
         return a.version > b.version;
     });
 
-    // Create filtered list (exclude in-use and recommended kernels)
     m_filteredList.clear();
     for (const auto &kernel : m_list) {
         if (!kernel.is_in_use() && !kernel.is_recommended()) {

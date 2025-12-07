@@ -28,10 +28,6 @@ namespace mcp::cli::kernel {
 
 using namespace mcp::kernel;
 
-/**
- * Command to install a kernel package.
- * Handles transaction setup, progress display, and error reporting.
- */
 class InstallCommand : public Command {
     std::string m_package_name;
     bool m_download_only;
@@ -181,14 +177,12 @@ public:
     }
 
 private:
-    /// Handle action signal (e.g., "Installing package...")
     void on_action(const std::string& action) {
         finish_action();
         finish_download();
         out().info(action);
     }
 
-    /// Handle action progress (e.g., package installation progress)
     void on_action_progress(const std::string& action, const std::string& status, double progress) {
         if (!m_action_active) {
             m_action_bar.set_label(action);
@@ -202,7 +196,6 @@ private:
         }
     }
 
-    /// Handle download progress
     void on_download_progress(const std::string& /*action*/, const std::string& status, double progress) {
         if (!m_download_active) {
             m_download_bar.reset();
@@ -215,7 +208,6 @@ private:
         }
     }
 
-    /// Handle error signal
     void on_error(const std::string& message, const std::vector<std::string>& details) {
         if (m_action_active) {
             m_action_bar.fail(message);
@@ -231,7 +223,6 @@ private:
         }
     }
 
-    /// Handle warning signal
     void on_warning(const std::string& warning) {
         clear_progress();
         fmt::print(stderr, "{} {}\n",
@@ -239,47 +230,40 @@ private:
             warning);
     }
 
-    /// Handle script output
     void on_script_output(const std::string& output) {
         clear_progress();
         fmt::print("{}", output);
     }
 
-    /// Handle hook progress
     void on_hook_progress(const std::string& action, const std::string& target,
                           const std::string& /*percent_str*/, double progress) {
         on_action_progress(action, target, progress);
     }
 
-    /// Handle start downloading
     void on_start_downloading() {
         finish_action();
         out().info("Downloading packages...");
     }
 
-    /// Handle start preparing
     void on_start_preparing() {
         finish_download();
         out().info("Preparing transaction...");
     }
-    
-    /// Finish download progress bar
+
     void finish_download(std::string_view message = "") {
         if (m_download_active) {
             m_download_bar.finish(message);
             m_download_active = false;
         }
     }
-    
-    /// Finish action progress bar
+
     void finish_action(std::string_view message = "") {
         if (m_action_active) {
             m_action_bar.finish(message);
             m_action_active = false;
         }
     }
-    
-    /// Clear all progress bars (for warnings/errors)
+
     void clear_progress() {
         if (m_download_active) m_download_bar.clear();
         if (m_action_active) m_action_bar.clear();

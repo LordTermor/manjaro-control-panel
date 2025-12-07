@@ -31,12 +31,6 @@ class Transaction;
 
 namespace mcp::agent {
 
-/**
- * Simple UI for transaction agent.
- * 
- * Shows progress, logs output, exits when done.
- * No user interaction needed - transaction runs automatically.
- */
 class AgentUi : public QWidget
 {
     Q_OBJECT
@@ -45,13 +39,6 @@ public:
     explicit AgentUi(QWidget* parent = nullptr);
     ~AgentUi() override = default;
 
-    /**
-     * Start transaction based on command-line arguments.
-     * @param operation - "install", "remove", or "upgrade"
-     * @param packages - package names
-     * @param force - force mode for remove
-     * @param refresh - force refresh for upgrade
-     */
     void startTransaction(
         const QString& operation,
         const QStringList& packages,

@@ -15,12 +15,6 @@
 
 namespace mcp::qt::common {
 
-/**
- * ProgressNotifier - Qt wrapper for PamacCpp::Transaction signals.
- * 
- * Connects to pamac-cpp transaction signals and emits Qt signals
- * for use in Qt/QML applications.
- */
 class ProgressNotifier : public QObject
 {
     Q_OBJECT
@@ -28,15 +22,7 @@ public:
     explicit ProgressNotifier(QObject *parent = nullptr);
     ~ProgressNotifier() override;
 
-    /**
-     * Connect to a pamac::Transaction.
-     * This sets up signal forwarding from pamac to Qt.
-     */
     void connect_transaction(pamac::Transaction& transaction);
-
-    /**
-     * Disconnect from current transaction.
-     */
     void disconnect_transaction();
 
 Q_SIGNALS:

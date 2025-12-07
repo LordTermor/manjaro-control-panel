@@ -25,9 +25,6 @@ namespace mcp::cli::kernel {
 
 using namespace mcp::kernel;
 
-/**
- * Command to list available kernels.
- */
 class ListCommand : public Command {
     bool m_installed_only;
     bool m_verbose;

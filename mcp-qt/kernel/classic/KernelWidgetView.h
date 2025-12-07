@@ -24,10 +24,6 @@
 
 namespace mcp::qt::kernel {
 
-/**
- * Main widget displaying the kernel manager interface.
- * Shows current/recommended kernels at top, full kernel list below.
- */
 class KernelWidgetView : public QWidget
 {
     Q_OBJECT

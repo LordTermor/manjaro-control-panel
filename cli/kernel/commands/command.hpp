@@ -15,8 +15,6 @@ namespace mcp::cli {
 class Command {
 public:
     virtual ~Command() = default;
-    
-    /// Execute the command, returns exit code
     [[nodiscard]] virtual int execute() = 0;
 };
 

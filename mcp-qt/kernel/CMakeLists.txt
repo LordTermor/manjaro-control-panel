@@ -49,9 +49,15 @@ endif()
 # Classic Qt Widgets standalone executable
 if(MCP_BUILD_QT_CLASSIC)
     add_executable(mcp-qt-classic
-        classic/classic_main.cpp
-        classic/KernelWidgetView.cpp
-        classic/KernelWidgetView.h
+        classic/main.cpp
+        classic/KernelPage.cpp
+        classic/KernelPage.h
+        classic/KernelCardWidget.cpp
+        classic/KernelCardWidget.h
+        classic/KernelListDelegate.cpp
+        classic/KernelListDelegate.h
+        classic/SelectedKernelsWidget.cpp
+        classic/SelectedKernelsWidget.h
     )
 
     target_link_libraries(mcp-qt-classic
