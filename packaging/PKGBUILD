@@ -3,9 +3,9 @@
 pkgbase=mcp
 pkgname=(
     'libmcp'
-    'mcp-cli'
+#    'mcp-cli'
     'mcp-qt'
-    'mcp-qt-classic'
+#    'mcp-qt-classic'
     'mcp-kcm'
 )
 pkgver=0.1.0
@@ -30,6 +30,9 @@ makedepends=(
     'kauth'
     'kcmutils'
     'fmt'
+    'libsigc++-3.0'
+    'libsoup3'
+    'qcoro'
 )
 source=("git+https://github.com/LordTermor/manjaro-control-panel.git")
 sha256sums=('SKIP')
@@ -40,9 +43,9 @@ build() {
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DMCP_BUILD_LIB=ON \
-        -DMCP_BUILD_CLI=ON \
+        -DMCP_BUILD_CLI=OFF \
         -DMCP_BUILD_QT=ON \
-        -DMCP_BUILD_QT_CLASSIC=ON \
+        -DMCP_BUILD_QT_CLASSIC=OFF \
         -DMCP_BUILD_KCM=ON
 
     cmake --build build
