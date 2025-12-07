@@ -5,7 +5,7 @@ pkgname=(
     'libmcp'
 #    'mcp-cli'
     'mcp-qt'
-#    'mcp-qt-classic'
+    # 'mcp-qt-classic'
     'mcp-kcm'
 )
 pkgver=0.1.0
@@ -88,13 +88,16 @@ package_mcp-qt() {
 
     # Install shared libraries
     DESTDIR="$pkgdir" cmake --install build/mcp-qt/common
-    DESTDIR="$pkgdir" cmake --install build/mcp-qt/modules
+    install -Dm755 build/bin/libmcp-qt-page-kernel.so "$pkgdir/usr/lib/libmcp-qt-page-kernel.so"
 
     # Install transaction agent
     install -Dm755 build/bin/mcp-transaction-agent "$pkgdir/usr/bin/mcp-transaction-agent"
 
     # Install icon
     install -Dm644 manjaro-control-panel/mcp-qt/data/assets/icon.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/mcp.svg"
+
+    # Install desktop file
+    install -Dm644 manjaro-control-panel/mcp-qt/data/applications/mcp-qt.desktop.in "$pkgdir/usr/share/applications/mcp-qt.desktop"
 }
 
 package_mcp-qt-classic() {
@@ -119,16 +122,9 @@ package_mcp-qt-classic() {
 package_mcp-kcm() {
     pkgdesc="KDE System Settings modules for Manjaro Control Panel"
     depends=(
-        'libmcp'
-        'qt6-base'
-        'qt6-declarative'
-        'kirigami'
-        'ki18n'
-        'kcoreaddons'
-        'kauth'
+        'mcp-qt'
         'kcmutils'
         'systemsettings'
-        'fmt'
     )
 
     # Install KCM plugin
