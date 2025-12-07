@@ -52,12 +52,10 @@ if(MCP_BUILD_QT_CLASSIC)
         classic/main.cpp
         classic/KernelPage.cpp
         classic/KernelPage.h
-        classic/KernelCardWidget.cpp
-        classic/KernelCardWidget.h
-        classic/KernelListDelegate.cpp
-        classic/KernelListDelegate.h
-        classic/SelectedKernelsWidget.cpp
-        classic/SelectedKernelsWidget.h
+        classic/KernelItemWidget.cpp
+        classic/KernelItemWidget.h
+        classic/BadgeWidget.cpp
+        classic/BadgeWidget.h
     )
 
     target_link_libraries(mcp-qt-classic

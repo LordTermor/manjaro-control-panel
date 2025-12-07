@@ -5,18 +5,19 @@
  */
 #pragma once
 
-#include "KernelListDelegate.h"
-#include "SelectedKernelsWidget.h"
+#include "KernelItemWidget.h"
 #include "../KernelViewModel.h"
 
 #include <QWidget>
-#include <QListView>
+#include <QFrame>
 #include <QLabel>
-#include <QProgressBar>
+#include <QScrollArea>
+#include <QVBoxLayout>
 
 /*
  * Main kernel manager page widget.
- * Combines SelectedKernelsWidget (top) with kernel list view (bottom).
+ * Top section: Current/Recommended kernel cards.
+ * Bottom section: Scrollable list of all kernels.
  */
 
 namespace mcp::qt::kernel {
@@ -31,15 +32,10 @@ public:
 
 private Q_SLOTS:
     void onKernelsDataChanged();
-    void onFetchProgress(int current, int total, const QString& kernelName);
-    
-    void onInstallClicked(const QModelIndex& index);
-    void onRemoveClicked(const QModelIndex& index);
-    void onChangelogClicked(const QModelIndex& index);
-    
-    void onCardInstallClicked(const QString& name, const QStringList& extraModules);
-    void onCardRemoveClicked(const QString& name);
-    void onCardChangelogClicked(const QString& changelogUrl);
+    void populateKernelList();
+    void onInstallClicked(const QString& name, const QStringList& extraModules);
+    void onRemoveClicked(const QString& name);
+    void onChangelogClicked(const QString& changelogUrl);
 
 private:
     void setupUi();
@@ -47,13 +43,20 @@ private:
     
     void confirmAndInstall(const QString& kernelName, const QStringList& extraModules);
     void confirmAndRemove(const QString& kernelName);
-    void openChangelog(const QString& changelogUrl);
 
     KernelViewModel* m_viewModel;
     
-    SelectedKernelsWidget* m_selectedKernels;
-    QListView* m_kernelListView;
-    KernelListDelegate* m_listDelegate;
+    // Top section - cards
+    QLabel* m_inUseLabel;
+    KernelItemWidget* m_inUseCard;
+    QLabel* m_recommendedLabel;
+    KernelItemWidget* m_recommendedCard;
+    
+    // Kernel list
+    QVBoxLayout* m_kernelListLayout;
+    QList<KernelItemWidget*> m_listItems;
+    QList<QLabel*> m_sectionHeaders;
+    QList<QFrame*> m_sectionSeparators;
 };
 
 } // namespace mcp::qt::kernel

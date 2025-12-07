@@ -7,17 +7,17 @@
 #include "KernelPage.h"
 #include "../KernelListModel.h"
 
-#include <QBoxLayout>
+#include <QAbstractItemModel>
 #include <QDesktopServices>
 #include <QFrame>
 #include <QMessageBox>
-#include <QSortFilterProxyModel>
+#include <QScrollArea>
 #include <QUrl>
 
 /*
  * Main kernel manager page.
- * Top section shows Current/Recommended kernel cards.
- * Bottom section shows full kernel list with custom delegate.
+ * Uses KernelItemWidget in Card mode for top section,
+ * and ListItem mode for the scrollable kernel list.
  */
 
 namespace mcp::qt::kernel {
@@ -28,8 +28,6 @@ KernelPage::KernelPage(KernelViewModel* viewModel, QWidget* parent)
 {
     setupUi();
     setupConnections();
-    
-    // Initial data load
     onKernelsDataChanged();
 }
 
@@ -39,116 +37,216 @@ void KernelPage::setupUi()
     mainLayout->setContentsMargins(12, 12, 12, 12);
     mainLayout->setSpacing(12);
     
-    m_selectedKernels = new SelectedKernelsWidget(this);
-    mainLayout->addWidget(m_selectedKernels);
+    // Top section: cards
+    auto* cardsLayout = new QHBoxLayout();
+    cardsLayout->setSpacing(12);
     
+    // In-use card
+    auto* inUseLayout = new QVBoxLayout();
+    inUseLayout->setSpacing(4);
+    m_inUseLabel = new QLabel(tr("Currently used"), this);
+    inUseLayout->addWidget(m_inUseLabel);
+    m_inUseCard = new KernelItemWidget(KernelItemWidget::Card, this);
+    inUseLayout->addWidget(m_inUseCard);
+    cardsLayout->addLayout(inUseLayout, 1);
+    
+    // Recommended card
+    auto* recommendedLayout = new QVBoxLayout();
+    recommendedLayout->setSpacing(4);
+    m_recommendedLabel = new QLabel(tr("Recommended"), this);
+    recommendedLayout->addWidget(m_recommendedLabel);
+    m_recommendedCard = new KernelItemWidget(KernelItemWidget::Card, this);
+    recommendedLayout->addWidget(m_recommendedCard);
+    cardsLayout->addLayout(recommendedLayout, 1);
+    
+    mainLayout->addLayout(cardsLayout);
+    
+    // Separator
     auto* separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
     
-    m_kernelListView = new QListView(this);
-    m_kernelListView->setAlternatingRowColors(true);
-    m_kernelListView->setSelectionMode(QAbstractItemView::NoSelection);
-    m_kernelListView->setFocusPolicy(Qt::NoFocus);
-    m_kernelListView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    // Scroll area for kernel list
+    auto* scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
     
-    auto* proxyModel = new QSortFilterProxyModel(this);
-    proxyModel->setSourceModel(m_viewModel->model());
-    proxyModel->setSortRole(KernelListModel::MajorVersion);
-    proxyModel->sort(0, Qt::DescendingOrder);
+    auto* scrollContent = new QWidget(scrollArea);
+    m_kernelListLayout = new QVBoxLayout(scrollContent);
+    m_kernelListLayout->setContentsMargins(0, 0, 0, 0);
+    m_kernelListLayout->setSpacing(0);
     
-    m_kernelListView->setModel(proxyModel);
-    
-    m_listDelegate = new KernelListDelegate(this);
-    m_kernelListView->setItemDelegate(m_listDelegate);
-    
-    mainLayout->addWidget(m_kernelListView, 1);
+    scrollArea->setWidget(scrollContent);
+    mainLayout->addWidget(scrollArea, 1);
 }
 
 void KernelPage::setupConnections()
 {
     connect(m_viewModel, &KernelViewModel::kernelsDataChanged,
             this, &KernelPage::onKernelsDataChanged);
-    connect(m_viewModel, &KernelViewModel::fetchProgress,
-            this, &KernelPage::onFetchProgress);
     
-    connect(m_listDelegate, &KernelListDelegate::installClicked,
+    // Model signals for async data loading
+    connect(m_viewModel->model(), &QAbstractItemModel::modelReset,
+            this, &KernelPage::populateKernelList);
+    connect(m_viewModel->model(), &QAbstractItemModel::rowsInserted,
+            this, &KernelPage::populateKernelList);
+    
+    // Card signals
+    connect(m_inUseCard, &KernelItemWidget::installClicked,
             this, &KernelPage::onInstallClicked);
-    connect(m_listDelegate, &KernelListDelegate::removeClicked,
+    connect(m_inUseCard, &KernelItemWidget::removeClicked,
             this, &KernelPage::onRemoveClicked);
-    connect(m_listDelegate, &KernelListDelegate::changelogClicked,
+    connect(m_inUseCard, &KernelItemWidget::changelogClicked,
             this, &KernelPage::onChangelogClicked);
     
-    connect(m_selectedKernels, &SelectedKernelsWidget::installClicked,
-            this, &KernelPage::onCardInstallClicked);
-    connect(m_selectedKernels, &SelectedKernelsWidget::removeClicked,
-            this, &KernelPage::onCardRemoveClicked);
-    connect(m_selectedKernels, &SelectedKernelsWidget::changelogClicked,
-            this, &KernelPage::onCardChangelogClicked);
+    connect(m_recommendedCard, &KernelItemWidget::installClicked,
+            this, &KernelPage::onInstallClicked);
+    connect(m_recommendedCard, &KernelItemWidget::removeClicked,
+            this, &KernelPage::onRemoveClicked);
+    connect(m_recommendedCard, &KernelItemWidget::changelogClicked,
+            this, &KernelPage::onChangelogClicked);
 }
 
 void KernelPage::onKernelsDataChanged()
 {
-    m_selectedKernels->setInUseKernel(m_viewModel->inUseKernelData());
-    m_selectedKernels->setRecommendedKernel(m_viewModel->recommendedKernelData());
-}
-
-void KernelPage::onFetchProgress(int current, int total, const QString& kernelName)
-{
-    Q_UNUSED(current)
-    Q_UNUSED(total)
-    Q_UNUSED(kernelName)
-}
-
-void KernelPage::onInstallClicked(const QModelIndex& index)
-{
-    QModelIndex sourceIndex = index;
-    if (auto* proxy = qobject_cast<QSortFilterProxyModel*>(m_kernelListView->model())) {
-        sourceIndex = proxy->mapToSource(index);
+    // Update in-use card
+    QVariantMap inUseData = m_viewModel->inUseKernelData();
+    if (!inUseData.isEmpty()) {
+        m_inUseCard->setKernelData(inUseData);
+        m_inUseCard->setVisible(true);
+        m_inUseLabel->setVisible(true);
+    } else {
+        m_inUseCard->setVisible(false);
+        m_inUseLabel->setVisible(false);
     }
     
-    QString name = sourceIndex.data(KernelListModel::Name).toString();
-    QStringList extraModules = sourceIndex.data(KernelListModel::ExtraModules).toStringList();
+    // Update recommended card
+    QVariantMap recommendedData = m_viewModel->recommendedKernelData();
+    if (!recommendedData.isEmpty()) {
+        m_recommendedCard->setKernelData(recommendedData);
+        m_recommendedCard->setVisible(true);
+        m_recommendedLabel->setVisible(true);
+        
+        bool isInstalled = recommendedData.value("isInstalled").toBool();
+        m_recommendedLabel->setText(isInstalled 
+            ? tr("Recommended (choose in boot menu)") 
+            : tr("Recommended"));
+    } else {
+        m_recommendedCard->setVisible(false);
+        m_recommendedLabel->setVisible(false);
+    }
     
+    populateKernelList();
+}
+
+void KernelPage::populateKernelList()
+{
+    // Clear existing items and section headers
+    for (auto* item : m_listItems) {
+        m_kernelListLayout->removeWidget(item);
+        delete item;
+    }
+    m_listItems.clear();
+    
+    for (auto* header : m_sectionHeaders) {
+        m_kernelListLayout->removeWidget(header);
+        delete header;
+    }
+    m_sectionHeaders.clear();
+    
+    for (auto* separator : m_sectionSeparators) {
+        m_kernelListLayout->removeWidget(separator);
+        delete separator;
+    }
+    m_sectionSeparators.clear();
+    
+    // Remove stretch if present
+    QLayoutItem* stretch = m_kernelListLayout->takeAt(m_kernelListLayout->count() - 1);
+    if (stretch) delete stretch;
+    
+    KernelListModel* model = m_viewModel->model();
+    
+    // Model already returns items sorted by category (In use, Installed, LTS, Other)
+    // so we just iterate in order and add section headers when category changes
+    QString currentCategory;
+    int itemIndexInSection = 0;
+    
+    for (int row = 0; row < model->rowCount(QModelIndex()); ++row) {
+        QModelIndex idx = model->index(row, 0);
+        
+        // Check if we need a section header
+        QString category = model->data(idx, KernelListModel::Category).toString();
+        if (category != currentCategory) {
+            // Add separator before sections (except first)
+            if (!currentCategory.isEmpty()) {
+                auto* separator = new QFrame(this);
+                separator->setFrameShape(QFrame::HLine);
+                separator->setFrameShadow(QFrame::Sunken);
+                m_kernelListLayout->addWidget(separator);
+                m_sectionSeparators.append(separator);
+            }
+            
+            currentCategory = category;
+            itemIndexInSection = 0;
+            
+            auto* header = new QLabel(category, this);
+            QFont headerFont = header->font();
+            headerFont.setBold(true);
+            header->setFont(headerFont);
+            header->setContentsMargins(12, 12, 12, 6);
+            m_kernelListLayout->addWidget(header);
+            m_sectionHeaders.append(header);
+        }
+        
+        QVariantMap data;
+        data["name"] = model->data(idx, KernelListModel::Name);
+        data["version"] = model->data(idx, KernelListModel::Version);
+        data["changelogUrl"] = model->data(idx, KernelListModel::ChangelogUrl);
+        data["extraModules"] = model->data(idx, KernelListModel::ExtraModules);
+        data["isInstalled"] = model->data(idx, KernelListModel::IsInstalled);
+        data["isInUse"] = model->data(idx, KernelListModel::IsInUse);
+        data["isLTS"] = model->data(idx, KernelListModel::IsLTS);
+        data["isRealTime"] = model->data(idx, KernelListModel::IsRealTime);
+        data["isEOL"] = model->data(idx, KernelListModel::IsEOL);
+        data["isExperimental"] = model->data(idx, KernelListModel::IsExperimental);
+        
+        auto* item = new KernelItemWidget(KernelItemWidget::ListItem, this);
+        item->setKernelData(data);
+        
+        // Zebra striping per section
+        item->setAlternateBackground(itemIndexInSection % 2 == 1);
+        itemIndexInSection++;
+        
+        connect(item, &KernelItemWidget::installClicked,
+                this, &KernelPage::onInstallClicked);
+        connect(item, &KernelItemWidget::removeClicked,
+                this, &KernelPage::onRemoveClicked);
+        connect(item, &KernelItemWidget::changelogClicked,
+                this, &KernelPage::onChangelogClicked);
+        
+        m_kernelListLayout->addWidget(item);
+        m_listItems.append(item);
+    }
+    
+    m_kernelListLayout->addStretch();
+}
+
+void KernelPage::onInstallClicked(const QString& name, const QStringList& extraModules)
+{
     confirmAndInstall(name, extraModules);
 }
 
-void KernelPage::onRemoveClicked(const QModelIndex& index)
-{
-    QModelIndex sourceIndex = index;
-    if (auto* proxy = qobject_cast<QSortFilterProxyModel*>(m_kernelListView->model())) {
-        sourceIndex = proxy->mapToSource(index);
-    }
-    
-    QString name = sourceIndex.data(KernelListModel::Name).toString();
-    confirmAndRemove(name);
-}
-
-void KernelPage::onChangelogClicked(const QModelIndex& index)
-{
-    QModelIndex sourceIndex = index;
-    if (auto* proxy = qobject_cast<QSortFilterProxyModel*>(m_kernelListView->model())) {
-        sourceIndex = proxy->mapToSource(index);
-    }
-    
-    QString changelogUrl = sourceIndex.data(KernelListModel::ChangelogUrl).toString();
-    openChangelog(changelogUrl);
-}
-
-void KernelPage::onCardInstallClicked(const QString& name, const QStringList& extraModules)
-{
-    confirmAndInstall(name, extraModules);
-}
-
-void KernelPage::onCardRemoveClicked(const QString& name)
+void KernelPage::onRemoveClicked(const QString& name)
 {
     confirmAndRemove(name);
 }
 
-void KernelPage::onCardChangelogClicked(const QString& changelogUrl)
+void KernelPage::onChangelogClicked(const QString& changelogUrl)
 {
-    openChangelog(changelogUrl);
+    if (!changelogUrl.isEmpty()) {
+        QDesktopServices::openUrl(QUrl(changelogUrl));
+    }
 }
 
 void KernelPage::confirmAndInstall(const QString& kernelName, const QStringList& extraModules)
@@ -187,13 +285,6 @@ void KernelPage::confirmAndRemove(const QString& kernelName)
     
     if (reply == QMessageBox::Yes) {
         m_viewModel->removeKernel(kernelName);
-    }
-}
-
-void KernelPage::openChangelog(const QString& changelogUrl)
-{
-    if (!changelogUrl.isEmpty()) {
-        QDesktopServices::openUrl(QUrl(changelogUrl));
     }
 }
 
