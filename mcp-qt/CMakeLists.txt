@@ -39,6 +39,13 @@ if(MCP_BUILD_KCM)
             DESTINATION ${KDE_INSTALL_DATADIR}/systemsettings/categories)
 endif()
 
+# Install standalone app desktop file
+if(MCP_BUILD_QT)
+    install(FILES data/applications/mcp-qt.desktop.in
+            DESTINATION ${KDE_INSTALL_APPDIR}
+            RENAME mcp-qt.desktop)
+endif()
+
 # Install MCP icon for application and category
 install(FILES data/assets/icon.svg
         DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps
