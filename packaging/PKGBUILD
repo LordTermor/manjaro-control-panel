@@ -104,6 +104,7 @@ package_mcp-qt-classic() {
     pkgdesc="Qt Widgets classic app for Manjaro Control Panel"
     depends=(
         'libmcp'
+        'mcp-qt'
         'qt6-base'
         'qt6-declarative'
         'kirigami'
