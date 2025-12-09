@@ -71,7 +71,9 @@ void KernelPage::setupUi()
     // Scroll area for kernel list
     auto* scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
-    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setFrameShape(QFrame::StyledPanel);
+    scrollArea->setProperty("_breeze_force_frame", true);
+
     
     auto* scrollContent = new QWidget(scrollArea);
     m_kernelListLayout = new QVBoxLayout(scrollContent);
