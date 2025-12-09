@@ -44,7 +44,7 @@ Kirigami.AbstractCard {
                 text: root.majorVersion + "." + root.minorVersion
                 font.pointSize: 14
                 font.weight: Font.Bold
-                color: "white"
+                color: Kirigami.Theme.textColor
             }
         }
 
