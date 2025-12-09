@@ -5,6 +5,7 @@
  */
 
 #include "KernelPage.h"
+#include "../KernelData.h"
 #include "../KernelListModel.h"
 
 #include <QAbstractItemModel>
@@ -111,8 +112,8 @@ void KernelPage::setupConnections()
 void KernelPage::onKernelsDataChanged()
 {
     // Update in-use card
-    QVariantMap inUseData = m_viewModel->inUseKernelData();
-    if (!inUseData.isEmpty()) {
+    KernelData inUseData = m_viewModel->inUseKernelData();
+    if (inUseData.isValid()) {
         m_inUseCard->setKernelData(inUseData);
         m_inUseCard->setVisible(true);
         m_inUseLabel->setVisible(true);
@@ -122,14 +123,13 @@ void KernelPage::onKernelsDataChanged()
     }
     
     // Update recommended card
-    QVariantMap recommendedData = m_viewModel->recommendedKernelData();
-    if (!recommendedData.isEmpty()) {
+    KernelData recommendedData = m_viewModel->recommendedKernelData();
+    if (recommendedData.isValid()) {
         m_recommendedCard->setKernelData(recommendedData);
         m_recommendedCard->setVisible(true);
         m_recommendedLabel->setVisible(true);
         
-        bool isInstalled = recommendedData.value("isInstalled").toBool();
-        m_recommendedLabel->setText(isInstalled 
+        m_recommendedLabel->setText(recommendedData.isInstalled 
             ? tr("Recommended (choose in boot menu)") 
             : tr("Recommended"));
     } else {

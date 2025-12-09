@@ -3,6 +3,7 @@
 # ============================================================================
 
 add_library(mcp-qt-page-kernel SHARED
+    KernelData.h
     KernelListModel.cpp
     KernelListModel.h
     KernelViewModel.cpp

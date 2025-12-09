@@ -95,6 +95,23 @@ void KernelItemWidget::setupUi()
     setMinimumSize(m_mode == Card ? QSize(300, 60) : QSize(400, 50));
 }
 
+void KernelItemWidget::setKernelData(const KernelData& data)
+{
+    m_name = data.name;
+    m_version = data.version;
+    m_changelogUrl = data.changelogUrl;
+    m_extraModules = data.extraModules;
+    
+    m_isInstalled = data.isInstalled;
+    m_isInUse = data.isInUse;
+    m_isLTS = data.isLTS;
+    m_isRealTime = false;  // Not in KernelData, handled separately by list model
+    m_isEOL = false;       // Not in KernelData, handled separately by list model
+    m_isExperimental = false; // Not in KernelData, handled separately by list model
+    
+    updateDisplay();
+}
+
 void KernelItemWidget::setKernelData(const QVariantMap& data)
 {
     m_name = data.value("name").toString();

@@ -23,7 +23,7 @@ Item {
         Item {
             width: (parent.width - Kirigami.Units.largeSpacing) / 2
             height: parent.height
-            visible: !!root.inUseKernel && !!root.inUseKernel.name
+            visible: root.inUseKernel.valid
 
             KernelDelegate {
                 id: inUseCard
@@ -34,28 +34,28 @@ Item {
                 anchors.bottom: inUseLabel.visible ? inUseLabel.top : parent.bottom
                 anchors.bottomMargin: inUseLabel.visible ? Kirigami.Units.smallSpacing : 0
                 
-                name: root.inUseKernel.name || ""
-                version: root.inUseKernel.version || ""
-                majorVersion: root.inUseKernel.majorVersion || 0
-                minorVersion: root.inUseKernel.minorVersion || 0
-                isInstalled: root.inUseKernel.isInstalled || false
-                isInUse: root.inUseKernel.isInUse || false
-                isRecommended: root.inUseKernel.isRecommended || false
-                isLTS: root.inUseKernel.isLTS || false
-                extraModules: root.inUseKernel.extraModules || []
-                changelogUrl: root.inUseKernel.changelogUrl || ""
+                name: root.inUseKernel.name
+                version: root.inUseKernel.version
+                majorVersion: root.inUseKernel.majorVersion
+                minorVersion: root.inUseKernel.minorVersion
+                isInstalled: root.inUseKernel.isInstalled
+                isInUse: root.inUseKernel.isInUse
+                isRecommended: root.inUseKernel.isRecommended
+                isLTS: root.inUseKernel.isLTS
+                extraModules: root.inUseKernel.extraModules
+                changelogUrl: root.inUseKernel.changelogUrl
                 actionsEnabled: root.actionsEnabled
 
                 onShowChangelog: {
-                    root.showChangelog(root.inUseKernel.changelogUrl || "")
+                    root.showChangelog(root.inUseKernel.changelogUrl)
                 }
 
                 onInstall: {
-                    root.install(root.inUseKernel.name, root.inUseKernel.extraModules || [])
+                    root.install(root.inUseKernel.name, root.inUseKernel.extraModules)
                 }
 
                 onRemove: {
-                    root.remove(root.inUseKernel.name, root.inUseKernel.extraModules || [])
+                    root.remove(root.inUseKernel.name, root.inUseKernel.extraModules)
                 }
             }
 
@@ -77,7 +77,7 @@ Item {
         Item {
             width: (parent.width - Kirigami.Units.largeSpacing) / 2
             height: parent.height
-            visible: !!root.recommendedKernel && !!root.recommendedKernel.name
+            visible: root.recommendedKernel.valid
 
             KernelDelegate {
                 id: recommendedCard
@@ -88,28 +88,28 @@ Item {
                 anchors.bottom: recommendedLabel.visible ? recommendedLabel.top : parent.bottom
                 anchors.bottomMargin: recommendedLabel.visible ? Kirigami.Units.smallSpacing : 0
                 
-                name: root.recommendedKernel.name || ""
-                version: root.recommendedKernel.version || ""
-                majorVersion: root.recommendedKernel.majorVersion || 0
-                minorVersion: root.recommendedKernel.minorVersion || 0
-                isInstalled: root.recommendedKernel.isInstalled || false
-                isInUse: root.recommendedKernel.isInUse || false
-                isRecommended: root.recommendedKernel.isRecommended || false
-                isLTS: root.recommendedKernel.isLTS || false
-                extraModules: root.recommendedKernel.extraModules || []
-                changelogUrl: root.recommendedKernel.changelogUrl || ""
+                name: root.recommendedKernel.name
+                version: root.recommendedKernel.version
+                majorVersion: root.recommendedKernel.majorVersion
+                minorVersion: root.recommendedKernel.minorVersion
+                isInstalled: root.recommendedKernel.isInstalled
+                isInUse: root.recommendedKernel.isInUse
+                isRecommended: root.recommendedKernel.isRecommended
+                isLTS: root.recommendedKernel.isLTS
+                extraModules: root.recommendedKernel.extraModules
+                changelogUrl: root.recommendedKernel.changelogUrl
                 actionsEnabled: root.actionsEnabled
 
                 onShowChangelog: {
-                    root.showChangelog(root.recommendedKernel.changelogUrl || "")
+                    root.showChangelog(root.recommendedKernel.changelogUrl)
                 }
 
                 onInstall: {
-                    root.install(root.recommendedKernel.name, root.recommendedKernel.extraModules || [])
+                    root.install(root.recommendedKernel.name, root.recommendedKernel.extraModules)
                 }
 
                 onRemove: {
-                    root.remove(root.recommendedKernel.name, root.recommendedKernel.extraModules || [])
+                    root.remove(root.recommendedKernel.name, root.recommendedKernel.extraModules)
                 }
             }
 

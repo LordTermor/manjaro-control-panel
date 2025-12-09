@@ -75,12 +75,12 @@ void KernelViewModel::setCurrentTransactionKernelName(const QString &newCurrentT
     Q_EMIT currentTransactionKernelNameChanged(m_currentTransactionKernelName);
 }
 
-QVariantMap KernelViewModel::inUseKernelData() const
+KernelData KernelViewModel::inUseKernelData() const
 {
     return m_inUseKernelData;
 }
 
-QVariantMap KernelViewModel::recommendedKernelData() const
+KernelData KernelViewModel::recommendedKernelData() const
 {
     return m_recommendedKernelData;
 }
@@ -102,31 +102,31 @@ void KernelViewModel::fetchAndUpdateKernels()
     
     QMetaObject::invokeMethod(
         this, [this, kernels_copy]() {
-            QVariantMap newInUseData;
-            QVariantMap newRecommendedData;
+            KernelData newInUseData;
+            KernelData newRecommendedData;
             
             for (const auto& kernel : kernels_copy) {
-                QVariantMap kernelMap;
-                kernelMap["name"] = QString::fromStdString(kernel.package_name);
-                kernelMap["version"] = QString::fromStdString(kernel.version.to_string());
-                kernelMap["isInUse"] = kernel.is_in_use();
-                kernelMap["isRecommended"] = kernel.is_recommended();
-                kernelMap["isInstalled"] = kernel.is_installed();
-                kernelMap["majorVersion"] = kernel.version.major;
-                kernelMap["minorVersion"] = kernel.version.minor;
-                kernelMap["changelogUrl"] = QString::fromStdString(kernel.changelog_url);
-                kernelMap["isLTS"] = kernel.is_lts();
+                KernelData kernelData;
+                kernelData.name = QString::fromStdString(kernel.package_name);
+                kernelData.version = QString::fromStdString(kernel.version.to_string());
+                kernelData.isInUse = kernel.is_in_use();
+                kernelData.isRecommended = kernel.is_recommended();
+                kernelData.isInstalled = kernel.is_installed();
+                kernelData.majorVersion = kernel.version.major;
+                kernelData.minorVersion = kernel.version.minor;
+                kernelData.changelogUrl = QString::fromStdString(kernel.changelog_url);
+                kernelData.isLTS = kernel.is_lts();
                 
                 QStringList extraModsList;
                 for (const auto& mod : kernel.extra_modules) {
                     extraModsList.append(QString::fromStdString(mod));
                 }
-                kernelMap["extraModules"] = extraModsList;
+                kernelData.extraModules = extraModsList;
                 
                 if (kernel.is_in_use()) {
-                    newInUseData = kernelMap;
+                    newInUseData = kernelData;
                 } else if (kernel.is_recommended()) {
-                    newRecommendedData = kernelMap;
+                    newRecommendedData = kernelData;
                 }
             }
 

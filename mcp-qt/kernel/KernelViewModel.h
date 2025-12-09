@@ -9,6 +9,8 @@
 #include <QObject>
 #include <QtQml>
 
+#include "KernelData.h"
+
 #include <kernel/KernelProvider.hpp>
 #include <kernel/KernelManager.hpp>
 
@@ -30,8 +32,8 @@ class KernelViewModel : public QObject
     Q_PROPERTY(mcp::qt::common::TransactionAgentLauncher *transactionLauncher READ transactionLauncher CONSTANT)
     Q_PROPERTY(QString currentTransactionKernelName READ currentTransactionKernelName WRITE
                    setCurrentTransactionKernelName NOTIFY currentTransactionKernelNameChanged)
-    Q_PROPERTY(QVariantMap inUseKernelData READ inUseKernelData NOTIFY kernelsDataChanged)
-    Q_PROPERTY(QVariantMap recommendedKernelData READ recommendedKernelData NOTIFY kernelsDataChanged)
+    Q_PROPERTY(KernelData inUseKernelData READ inUseKernelData NOTIFY kernelsDataChanged)
+    Q_PROPERTY(KernelData recommendedKernelData READ recommendedKernelData NOTIFY kernelsDataChanged)
 
 public:
     explicit KernelViewModel(KernelListModel &model, QObject *parent = nullptr)
@@ -52,8 +54,8 @@ public:
     QString currentTransactionKernelName() const;
     void setCurrentTransactionKernelName(const QString &newCurrentTransactionKernelName);
 
-    QVariantMap inUseKernelData() const;
-    QVariantMap recommendedKernelData() const;
+    KernelData inUseKernelData() const;
+    KernelData recommendedKernelData() const;
 
 Q_SIGNALS:
     void currentTransactionKernelNameChanged(QString currentTransactionKernelName);
@@ -70,7 +72,7 @@ private:
 
     mcp::qt::common::TransactionAgentLauncher m_transactionLauncher;
     QString m_currentTransactionKernelName;
-    QVariantMap m_inUseKernelData;
-    QVariantMap m_recommendedKernelData;
+    KernelData m_inUseKernelData;
+    KernelData m_recommendedKernelData;
 };
 } // namespace mcp::qt::kernel

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "BadgeWidget.h"
+#include "../KernelData.h"
 
 #include <QFrame>
 #include <QLabel>
@@ -31,6 +32,7 @@ public:
     explicit KernelItemWidget(Mode mode = ListItem, QWidget* parent = nullptr);
     ~KernelItemWidget() override = default;
 
+    void setKernelData(const KernelData& data);
     void setKernelData(const QVariantMap& data);
     void setAlternateBackground(bool alternate);
     
