@@ -29,9 +29,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("MCP Kernel Manager");
     app.setOrganizationName("Manjaro");
     app.setApplicationVersion(MCP_VERSION);
-    
-    // Use Breeze style for consistent look
-    QQuickStyle::setStyle("org.kde.breeze");
+   
 
     // Initialize pamac database
     auto status = pamac::Database::initialize("/etc/pamac.conf");
