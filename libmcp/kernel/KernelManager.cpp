@@ -20,12 +20,10 @@ KernelManager::KernelManager(pamac::Database& database)
 
 void KernelManager::reset_transaction()
 {
-    // TODO: Add reset method to pamac::Transaction or create new manager instance
 }
 
 void KernelManager::on_transaction_success()
 {
-    // Refresh file database to update package information after installation/removal
     database_.refresh_tmp_files_dbs();
 }
 
@@ -45,21 +43,17 @@ KernelManager::add_to_install(const std::string& package_name, bool with_headers
     
     auto& db = db_result.value().get();
     
-    // Check for pending updates before installation
     if (has_pending_updates(db)) {
         return std::unexpected(KernelManagerError::UpdatesPending);
     }
     
-    // Verify kernel package exists
     auto kernel_pkg = db.get_sync_pkg(package_name);
     if (!kernel_pkg) {
         return std::unexpected(KernelManagerError::KernelNotFound);
     }
     
-    // Add kernel package to install
     transaction_.add_pkg_to_install(package_name);
     
-    // Add headers package if requested and available
     if (with_headers) {
         std::string headers_name = get_headers_package(package_name);
         auto headers_pkg = db.get_sync_pkg(headers_name);
@@ -81,21 +75,17 @@ KernelManager::add_to_remove(const std::string& package_name, bool with_headers,
     
     auto& db = db_result.value().get();
     
-    // Verify kernel package is installed
     auto kernel_pkg = db.get_installed_pkg(package_name);
     if (!kernel_pkg) {
         return std::unexpected(KernelManagerError::KernelNotFound);
     }
     
-    // Check if kernel is in use (unless forced)
     if (!force && !verify_safe_to_remove(package_name)) {
         return std::unexpected(KernelManagerError::KernelInUse);
     }
     
-    // Add kernel package to remove
     transaction_.add_pkg_to_remove(package_name);
     
-    // Add headers package if requested and installed
     if (with_headers) {
         std::string headers_name = get_headers_package(package_name);
         auto headers_pkg = db.get_installed_pkg(headers_name);
@@ -138,7 +128,6 @@ KernelManager::build_agent_command(
 {
     std::vector<std::string> cmd = {"mcp-transaction-agent", operation};
     
-    // Add flags
     if (force && operation == "remove") {
         cmd.push_back("--force");
     }
@@ -146,7 +135,6 @@ KernelManager::build_agent_command(
         cmd.push_back("--refresh");
     }
     
-    // Add packages
     for (const auto& pkg : packages) {
         cmd.push_back(pkg);
     }

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "kernel/Kernel.hpp"
-#include "common/colors.hpp"
+#include "common/symbols.hpp"
 #include "common/output.hpp"
 
 #include <fmt/color.h>
@@ -111,7 +111,6 @@ public:
 
         print_field("Status", badges(k));
 
-        // Flags breakdown
         fmt::print("\n  Flags:\n");
 
         auto flag_line = [](std::string_view name, bool value) {

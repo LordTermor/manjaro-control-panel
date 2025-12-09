@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "colors.hpp"
+#include "symbols.hpp"
 #include "output.hpp"
 
 #include <fmt/color.h>

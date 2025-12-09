@@ -5,6 +5,11 @@
  *
  */
 
+/*
+ * Table - formatted terminal table with column alignment and styling.
+ * Simple ASCII table builder for consistent CLI output.
+ */
+
 #pragma once
 
 #include "output.hpp"
@@ -55,7 +60,7 @@ struct Cell {
  */
 struct Row {
     std::vector<Cell> cells;
-    std::string prefix;  // e.g., "▶ " for running kernel
+    std::string prefix;  // e.g., "▶ " for running/installed item
     
     Row() = default;
     Row(std::vector<Cell> c) : cells(std::move(c)) {}

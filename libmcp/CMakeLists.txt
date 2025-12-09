@@ -51,3 +51,4 @@ target_include_directories(libmcp
 install(TARGETS libmcp)
 
 add_subdirectory(kernel)
+add_subdirectory(mhwd)

@@ -34,12 +34,10 @@ inline bool is_actual_kernel(const mcp::kernel::Kernel& k) {
     
     auto dash_count = std::ranges::count(name, '-');
     
-    // No dashes: linux66, linux612 - always valid
     if (dash_count == 0) {
         return true;
     }
     
-    // One dash: check for valid kernel suffixes
     if (dash_count == 1) {
         static constexpr std::array valid_suffixes = {
             std::string_view{"-rt"},

@@ -33,7 +33,6 @@ class InstallCommand : public Command {
     bool m_download_only;
     bool m_no_confirm;
     
-    // Progress tracking
     ProgressBar m_download_bar{"Downloading", 35};
     ProgressBar m_action_bar{"Installing", 35};
     bool m_download_active = false;
@@ -47,7 +46,6 @@ public:
     {}
 
     [[nodiscard]] int execute() override {
-        // Verify the kernel exists
         KernelProvider provider;
         auto kernel_result = provider.get_kernel(m_package_name);
 
@@ -69,14 +67,12 @@ public:
 
         const auto& kernel = *kernel_result;
 
-        // Check if already installed
         if (kernel.is_installed()) {
             out().info(fmt::format("Kernel '{}' is already installed (version {}).",
                                    m_package_name, kernel.installed_version));
             return 0;
         }
 
-        // Get database instance
         auto db_result = pamac::Database::instance();
         if (!db_result) {
             out().error("Database not initialized.");
@@ -84,19 +80,14 @@ public:
         }
         auto& db = db_result.value();
 
-        // Create transaction
         pamac::Transaction txn(db);
 
-        // Setup signal handlers
         setup_transaction_signals(txn);
 
-        // Configure transaction
         txn.set_download_only(m_download_only);
 
-        // Add kernel package to install
         txn.add_pkg_to_install(m_package_name);
 
-        // Also need to install kernel headers typically
         std::string headers_pkg = m_package_name + "-headers";
         auto headers_result = provider.get_kernel(headers_pkg);
         if (headers_result && !headers_result->is_installed()) {
@@ -104,7 +95,6 @@ public:
             txn.add_pkg_to_install(headers_pkg);
         }
 
-        // Show what will be installed
         out().header("Installing Kernel");
         fmt::print("Package: {}\n", m_package_name);
         fmt::print("Version: {}\n", kernel.available_version);
@@ -113,7 +103,6 @@ public:
             return 0;
         }
 
-        // Get authorization (sudo/polkit)
         fmt::print("\n");
         out().info("Requesting authorization...");
         
@@ -138,7 +127,6 @@ public:
             return 1;
         }
 
-        // Run the transaction
         out().info("Starting transaction...");
         
         bool run_result = false;
@@ -157,7 +145,6 @@ public:
             g_main_context_iteration(nullptr, TRUE);
         }
 
-        // Clean up authorization
         txn.remove_authorization();
 
         if (!run_result) {

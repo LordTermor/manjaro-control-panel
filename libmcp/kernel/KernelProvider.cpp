@@ -23,26 +23,21 @@ namespace mcp::kernel {
 
 namespace {
 
-/// Pattern to match kernel packages (e.g., "linux66", "linux610")
 constexpr std::string_view c_kernel_glob = "linux[0-9]*";
 
-/// Official Manjaro repositories (kernels from other repos are considered third-party)
 constexpr std::array c_official_repos = {
     std::string_view{"core"},
     std::string_view{"extra"},
     std::string_view{"multilib"},
 };
 
-/// Check if repo is an official up-to-date repository
 bool is_official_repo(const std::string& repo)
 {
     return std::ranges::find(c_official_repos, repo) != c_official_repos.end();
 }
 
-/// Check if kernel version is LTS
 bool is_lts_version(int major, int minor)
 {
-    // LTS kernel versions as of 2025
     static const std::vector<std::pair<int, int>> lts_versions = {
         {4, 14}, {4, 19},
         {5, 4}, {5, 10}, {5, 15},
@@ -52,13 +47,11 @@ bool is_lts_version(int major, int minor)
     return std::ranges::find(lts_versions, std::make_pair(major, minor)) != lts_versions.end();
 }
 
-/// Check if package name indicates real-time kernel
 bool is_rt_kernel(const std::string& name)
 {
     return name.contains("-rt");
 }
 
-/// Check if package name indicates experimental kernel
 bool is_experimental_kernel(const std::string& name)
 {
     return name.contains("-rc") || name.contains("-git");
@@ -94,11 +87,9 @@ std::optional<KernelVersion> KernelProvider::parse_version(const std::string& na
     if (std::regex_match(name, match, version_regex)) {
         KernelVersion version;
 
-        // Convert match to string and use stoi for parsing
         version.major = std::stoi(match[1].str());
         version.minor = std::stoi(match[2].str());
 
-        // Patch info comes from installed/available version
         return version;
     }
 
@@ -123,7 +114,6 @@ KernelFlags KernelProvider::detect_flags(const pamac::AlpmPackagePtr& pkg,
     flags.experimental = is_experimental_kernel(name);
     flags.installed = pkg->is_installed();
 
-    // Check if this is the running kernel
     if (!running_version.empty() && flags.installed) {
         auto installed_ver = pkg->installed_version();
         if (installed_ver && running_version.contains(*installed_ver)) {
@@ -131,7 +121,6 @@ KernelFlags KernelProvider::detect_flags(const pamac::AlpmPackagePtr& pkg,
         }
     }
 
-    // Recommended flag will be set later for latest LTS
     flags.recommended = false;
 
     return flags;
@@ -141,7 +130,6 @@ std::optional<Kernel> KernelProvider::parse_kernel(const pamac::AlpmPackagePtr& 
 {
     const auto& name = pkg->name();
 
-    // Skip headers, docs, and other non-kernel packages
     if (name.contains("-headers") || name.contains("-docs") ||
         name.contains("-api-headers")) {
         return std::nullopt;
@@ -167,16 +155,13 @@ std::optional<Kernel> KernelProvider::parse_kernel(const pamac::AlpmPackagePtr& 
     kernel.version = *version_opt;
     kernel.flags = detect_flags(pkg, running);
 
-    // Get repo and check if it's official
     if (auto repo = pkg->repo()) {
         kernel.repo = *repo;
         kernel.flags.not_supported = !is_official_repo(kernel.repo);
     } else {
-        // No repo means it's a foreign/local package
         kernel.flags.not_supported = true;
     }
 
-    // Get version strings
     if (auto installed = pkg->installed_version()) {
         kernel.installed_version = *installed;
     }
@@ -212,10 +197,8 @@ std::optional<Kernel> KernelProvider::parse_kernel(const pamac::AlpmPackagePtr& 
 
 void KernelProvider::populate_kernel_metadata(Kernel& kernel) const
 {
-    // Set extra modules
     kernel.extra_modules = get_extra_modules(kernel.package_name);
     
-    // Set changelog URL
     kernel.changelog_url = "https://kernelnewbies.org/Linux_" + 
                            std::to_string(kernel.version.major) + "." + 
                            std::to_string(kernel.version.minor);
@@ -223,7 +206,6 @@ void KernelProvider::populate_kernel_metadata(Kernel& kernel) const
 
 KernelResult<std::vector<Kernel>> KernelProvider::get_kernels(ProgressCallback progress) const
 {
-    // Get kernel packages from sync repos
     auto packages = pamac::Database::instance().value().get().get_sync_pkgs_by_glob(std::string(c_kernel_glob));
 
     std::vector<Kernel> kernels;
@@ -277,13 +259,11 @@ KernelResult<std::vector<Kernel>> KernelProvider::get_kernels(ProgressCallback p
 
 coro::task<KernelResult<std::vector<Kernel>>> KernelProvider::get_kernels_async(ProgressCallback progress) const
 {
-    // Use async search
     auto packages = co_await pamac::Database::instance().value().get().search_pkgs_async("linux");
 
     std::vector<Kernel> kernels;
 
     for (const auto& pkg : packages) {
-        // Filter to only kernel packages
         const auto& name = pkg->name();
         if (!name.starts_with("linux") || name.contains("-headers")) {
             continue;
@@ -324,10 +304,8 @@ coro::task<KernelResult<std::vector<Kernel>>> KernelProvider::get_kernels_async(
             progress(current, total, kernel.package_name);
         }
         
-        // Populate extra modules
         kernel.extra_modules = get_extra_modules(kernel.package_name);
         
-        // Set changelog URL
         kernel.changelog_url = "https://kernelnewbies.org/Linux_" + 
                                std::to_string(kernel.version.major) + "." + 
                                std::to_string(kernel.version.minor);
@@ -378,7 +356,6 @@ KernelResult<Kernel> KernelProvider::get_running_kernel() const
 
     auto result = get_kernel(package_name);
     if (result) {
-        // Ensure in_use flag is set
         result->flags.in_use = true;
     }
 
@@ -409,7 +386,6 @@ std::vector<std::string> KernelProvider::get_extra_modules(const std::string& pa
         for (const auto& pkg : running_packages) {
             const auto& name = pkg->name();
             
-            // Skip headers and docs
             if (name == running_pkg + "-headers" || 
                 name.ends_with("-docs") || 
                 name.ends_with("-api-headers")) {
@@ -425,19 +401,16 @@ std::vector<std::string> KernelProvider::get_extra_modules(const std::string& pa
         }
     }
     
-    // If no modules installed on current kernel, return empty list
     if (installed_module_types.empty()) {
         return modules;
     }
     
-    // Build glob pattern for target kernel: linux<version>{-rt}-*
     std::string glob_pattern = package_name + "-*";
     auto packages = db.get_sync_pkgs_by_glob(glob_pattern);
     
     for (const auto& pkg : packages) {
         const auto& name = pkg->name();
         
-        // Skip the kernel itself, headers, and docs
         if (name == package_name || 
             name == package_name + "-headers" || 
             name.ends_with("-docs") || 
@@ -445,7 +418,6 @@ std::vector<std::string> KernelProvider::get_extra_modules(const std::string& pa
             continue;
         }
         
-        // Extract module type from target kernel package
         auto module_start = package_name.length() + 1;
         if (module_start >= name.length()) {
             continue;

@@ -47,7 +47,6 @@ public:
 
         auto kernels = std::move(*result);
 
-        // Filter to actual kernels only
         filter_actual_kernels(kernels);
 
         if (m_installed_only) {
@@ -105,7 +104,6 @@ private:
     }
 
     int print_table(const std::vector<Kernel>& kernels) {
-        // Partition kernels: installed first
         std::vector<std::reference_wrapper<const Kernel>> installed;
         std::vector<std::reference_wrapper<const Kernel>> available;
 
@@ -117,24 +115,20 @@ private:
             }
         }
 
-        // Build table
         Table table;
         table.add_column("PACKAGE", Align::Left)
              .add_column("VERSION", Align::Right)
              .add_column("STATUS", Align::Left);
 
-        // Add installed kernels
         for (const auto& ref : installed) {
             const auto& k = ref.get();
             add_kernel_row(table, k);
         }
 
-        // Add separator if both sections exist
         if (!installed.empty() && !available.empty() && !m_installed_only) {
             table.add_separator();
         }
 
-        // Add available kernels
         if (!m_installed_only) {
             for (const auto& ref : available) {
                 const auto& k = ref.get();
@@ -142,12 +136,10 @@ private:
             }
         }
 
-        // Calculate widths and print
         table.auto_size();
         out().header("Available Kernels");
         table.print();
 
-        // Summary
         fmt::print("\n");
         out().info(fmt::format("{} kernel(s) installed, {} available",
                                installed.size(), available.size()));
@@ -158,19 +150,14 @@ private:
     void add_kernel_row(Table& table, const Kernel& k) {
         std::vector<Cell> cells;
 
-        // Name cell with color
         cells.emplace_back(k.package_name, KernelFormatter::name_style(k));
 
-        // Version cell
         cells.emplace_back(KernelFormatter::version_string(k), fmt::emphasis::faint);
 
-        // Status badges
         cells.emplace_back(KernelFormatter::badges(k));
 
-        // Add row with prefix
         table.add_row(std::move(cells), KernelFormatter::row_prefix(k));
 
-        // Verbose: extra info line
         if (m_verbose) {
             // TODO: Add verbose row support to table
         }

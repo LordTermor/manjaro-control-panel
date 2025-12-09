@@ -5,9 +5,14 @@
  *
  */
 
+/*
+ * Output - formatted terminal output with color support.
+ * Provides consistent styling for headers, errors, info, and success messages.
+ */
+
 #pragma once
 
-#include "colors.hpp"
+#include "symbols.hpp"
 
 #include <fmt/color.h>
 #include <fmt/core.h>
@@ -35,15 +40,15 @@ public:
     void set_color_enabled(bool enabled) { m_use_color = enabled; }
     [[nodiscard]] bool color_enabled() const { return m_use_color; }
 
-    void header(std::string_view title) const {
+    void header(std::string_view title, std::string_view icon = symbol::info) const {
         if (m_use_color) {
             fmt::print("\n{} {}\n",
-                       fmt::styled(symbol::kernel, fmt::emphasis::bold),
-                       fmt::styled(title, fmt::emphasis::bold));
+                       fmt::styled(icon, fmt::emphasis::bold),
+                       fmt::styled(title, fmt::emphasis::bold | fmt::fg(fmt::color::cyan)));
             fmt::print("{}\n", fmt::styled("─────────────────────────────────────────────────────",
-                                          fmt::emphasis::faint));
+                                          fmt::emphasis::faint | fmt::fg(fmt::color::dark_gray)));
         } else {
-            fmt::print("\n{} {}\n", symbol::kernel, title);
+            fmt::print("\n{} {}\n", icon, title);
             fmt::print("─────────────────────────────────────────────────────\n");
         }
     }
@@ -75,6 +80,16 @@ public:
                        message);
         } else {
             fmt::print("{} {}\n", symbol::info, message);
+        }
+    }
+
+    void warning(std::string_view message) const {
+        if (m_use_color) {
+            fmt::print("{} {}\n",
+                       fmt::styled(symbol::warning, fmt::fg(fmt::color::yellow)),
+                       message);
+        } else {
+            fmt::print("{} {}\n", symbol::warning, message);
         }
     }
 
