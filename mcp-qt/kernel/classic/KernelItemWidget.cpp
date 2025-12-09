@@ -53,7 +53,6 @@ void KernelItemWidget::setupUi()
     auto* infoLayout = new QVBoxLayout();
     infoLayout->setSpacing(4);
     
-    // Title row: kernel name + inline badges
     auto* titleRow = new QHBoxLayout();
     titleRow->setSpacing(8);
     
@@ -71,7 +70,6 @@ void KernelItemWidget::setupUi()
     titleRow->addStretch();
     infoLayout->addLayout(titleRow);
     
-    // Package info row
     m_packageInfoLabel = new QLabel(this);
     m_packageInfoLabel->setTextFormat(Qt::RichText);
     m_packageInfoLabel->setOpenExternalLinks(false);
@@ -82,12 +80,10 @@ void KernelItemWidget::setupUi()
     
     mainLayout->addLayout(infoLayout, 1);
     
-    // Status badges (right side, for list items)
     m_statusBadgesLayout = new QHBoxLayout();
     m_statusBadgesLayout->setSpacing(6);
     mainLayout->addLayout(m_statusBadgesLayout);
     
-    // Action button
     m_actionButton = new QPushButton(this);
     m_actionButton->setMinimumWidth(90);
     mainLayout->addWidget(m_actionButton);
@@ -133,7 +129,6 @@ void KernelItemWidget::updateDisplay()
 {
     m_kernelNameLabel->setText("Linux " + m_version);
     
-    // Package info with changelog link
     QString info = m_name;
     
     if (!m_changelogUrl.isEmpty()) {
@@ -142,10 +137,8 @@ void KernelItemWidget::updateDisplay()
     }
     m_packageInfoLabel->setText(info);
     
-    // Rebuild badges
     clearBadges();
     
-    // Inline badges (next to kernel name): RT, LTS
     if (m_isRealTime) {
         addInlineBadge(tr("RT"), BadgeWidget::RealTime);
     }
@@ -153,7 +146,6 @@ void KernelItemWidget::updateDisplay()
         addInlineBadge(tr("LTS"), BadgeWidget::LTS);
     }
     
-    // Status badges
     if (m_isEOL) {
         addStatusBadge(tr("Unsupported"), BadgeWidget::EOL);
     }
@@ -161,7 +153,6 @@ void KernelItemWidget::updateDisplay()
         addStatusBadge(tr("Experimental"), BadgeWidget::Experimental);
     }
     
-    // Update action button
     if (m_isInUse) {
         m_actionButton->setText(tr("Running"));
         m_actionButton->setIcon(QIcon());

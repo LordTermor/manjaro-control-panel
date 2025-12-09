@@ -47,16 +47,13 @@ int main(int argc, char *argv[])
             return new mcp::qt::common::VersionInfo();
         });
 
-    // Create model and view model
     KernelListModel model;
     KernelViewModel viewModel(model);
 
     QQmlApplicationEngine engine;
 
-    // Expose the view model to QML
     engine.rootContext()->setContextProperty("vm", &viewModel);
 
-    // Load the standalone QML
     engine.load(QUrl("qrc:/kernel-page/ui/standalone_main.qml"));
 
     if (engine.rootObjects().isEmpty()) {

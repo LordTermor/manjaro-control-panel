@@ -34,29 +34,23 @@ int main(int argc, char *argv[])
     app.setApplicationVersion(MCP_VERSION);
 #endif
 
-    // Set application icon
     app.setWindowIcon(QIcon::fromTheme("preferences-system-linux-kernel",
                                        QIcon(":/images/resources/tux-manjaro.png")));
 
-    // Create the model and view model
     KernelListModel model;
     KernelViewModel viewModel(model);
 
-    // Create main window
     QMainWindow mainWindow;
     mainWindow.setWindowTitle(QObject::tr("Manjaro Kernel Manager"));
     mainWindow.setWindowIcon(app.windowIcon());
     mainWindow.setMinimumSize(700, 500);
     mainWindow.resize(850, 600);
 
-    // Create and set the kernel page as central widget
     auto* kernelPage = new KernelPage(&viewModel);
     mainWindow.setCentralWidget(kernelPage);
 
-    // === Menu bar ===
     QMenuBar* menuBar = mainWindow.menuBar();
     
-    // File menu
     QMenu* fileMenu = menuBar->addMenu(QObject::tr("&File"));
     
     QAction* refreshAction = fileMenu->addAction(QObject::tr("&Refresh"));
@@ -71,7 +65,6 @@ int main(int argc, char *argv[])
     quitAction->setIcon(QIcon::fromTheme("application-exit"));
     QObject::connect(quitAction, &QAction::triggered, &app, &QApplication::quit);
     
-    // Help menu
     QMenu* helpMenu = menuBar->addMenu(QObject::tr("&Help"));
     
     QAction* aboutAction = helpMenu->addAction(QObject::tr("&About"));
@@ -97,7 +90,6 @@ int main(int argc, char *argv[])
     aboutQtAction->setIcon(QIcon::fromTheme("help-about"));
     QObject::connect(aboutQtAction, &QAction::triggered, &app, &QApplication::aboutQt);
 
-    // Status bar
     mainWindow.statusBar()->showMessage(QObject::tr("Ready"));
 
     mainWindow.show();

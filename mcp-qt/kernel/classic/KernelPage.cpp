@@ -38,11 +38,9 @@ void KernelPage::setupUi()
     mainLayout->setContentsMargins(12, 12, 12, 12);
     mainLayout->setSpacing(12);
     
-    // Top section: cards
     auto* cardsLayout = new QHBoxLayout();
     cardsLayout->setSpacing(12);
     
-    // In-use card
     auto* inUseLayout = new QVBoxLayout();
     inUseLayout->setSpacing(4);
     m_inUseLabel = new QLabel(tr("Currently used"), this);
@@ -51,7 +49,6 @@ void KernelPage::setupUi()
     inUseLayout->addWidget(m_inUseCard);
     cardsLayout->addLayout(inUseLayout, 1);
     
-    // Recommended card
     auto* recommendedLayout = new QVBoxLayout();
     recommendedLayout->setSpacing(4);
     m_recommendedLabel = new QLabel(tr("Recommended"), this);
@@ -62,13 +59,11 @@ void KernelPage::setupUi()
     
     mainLayout->addLayout(cardsLayout);
     
-    // Separator
     auto* separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
     
-    // Scroll area for kernel list
     auto* scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::StyledPanel);
@@ -89,13 +84,11 @@ void KernelPage::setupConnections()
     connect(m_viewModel, &KernelViewModel::kernelsDataChanged,
             this, &KernelPage::onKernelsDataChanged);
     
-    // Model signals for async data loading
     connect(m_viewModel->model(), &QAbstractItemModel::modelReset,
             this, &KernelPage::populateKernelList);
     connect(m_viewModel->model(), &QAbstractItemModel::rowsInserted,
             this, &KernelPage::populateKernelList);
     
-    // Card signals
     connect(m_inUseCard, &KernelItemWidget::installClicked,
             this, &KernelPage::onInstallClicked);
     connect(m_inUseCard, &KernelItemWidget::removeClicked,
@@ -113,7 +106,6 @@ void KernelPage::setupConnections()
 
 void KernelPage::onKernelsDataChanged()
 {
-    // Update in-use card
     KernelData inUseData = m_viewModel->inUseKernelData();
     if (inUseData.isValid()) {
         m_inUseCard->setKernelData(inUseData);
@@ -124,7 +116,6 @@ void KernelPage::onKernelsDataChanged()
         m_inUseLabel->setVisible(false);
     }
     
-    // Update recommended card
     KernelData recommendedData = m_viewModel->recommendedKernelData();
     if (recommendedData.isValid()) {
         m_recommendedCard->setKernelData(recommendedData);
@@ -144,7 +135,6 @@ void KernelPage::onKernelsDataChanged()
 
 void KernelPage::populateKernelList()
 {
-    // Clear existing items and section headers
     for (auto* item : m_listItems) {
         m_kernelListLayout->removeWidget(item);
         delete item;
@@ -163,7 +153,6 @@ void KernelPage::populateKernelList()
     }
     m_sectionSeparators.clear();
     
-    // Remove stretch if present
     QLayoutItem* stretch = m_kernelListLayout->takeAt(m_kernelListLayout->count() - 1);
     if (stretch) delete stretch;
     
@@ -177,10 +166,8 @@ void KernelPage::populateKernelList()
     for (int row = 0; row < model->rowCount(QModelIndex()); ++row) {
         QModelIndex idx = model->index(row, 0);
         
-        // Check if we need a section header
         QString category = model->data(idx, KernelListModel::Category).toString();
         if (category != currentCategory) {
-            // Add separator before sections (except first)
             if (!currentCategory.isEmpty()) {
                 auto* separator = new QFrame(this);
                 separator->setFrameShape(QFrame::HLine);

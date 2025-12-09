@@ -6,6 +6,8 @@
 
 #include "BadgeWidget.h"
 
+#include <unordered_map>
+
 /*
  * Stylesheet-based colored badge widget.
  * Uses CSS-like styling for background, border, and text colors.
@@ -14,26 +16,19 @@
 namespace mcp::qt::kernel {
 
 namespace {
-    // Color schemes: background, border, text (matching QML badge colors)
     struct BadgeColors {
         std::string_view bg;
         std::string_view border;
         std::string_view text;
     };
 
-    const BadgeColors colorSchemes[] = {
-        // LTS - orange
-        {"rgba(233, 117, 23, 0.15)", "rgba(233, 117, 23, 0.3)", "#e97517"},
-        // RealTime - blue
-        {"rgba(52, 152, 219, 0.15)", "rgba(52, 152, 219, 0.3)", "#3498db"},
-        // Installed - green
-        {"rgba(60, 118, 61, 0.15)", "rgba(60, 118, 61, 0.3)", "#3c763d"},
-        // Running - green (same as installed)
-        {"rgba(60, 118, 61, 0.15)", "rgba(60, 118, 61, 0.3)", "#3c763d"},
-        // EOL - red
-        {"rgba(231, 76, 60, 0.15)", "rgba(231, 76, 60, 0.3)", "#e74c3c"},
-        // Experimental - yellow
-        {"rgba(241, 196, 15, 0.15)", "rgba(241, 196, 15, 0.3)", "#f39c12"},
+    const std::unordered_map<BadgeWidget::Type, BadgeColors> colorSchemes = {
+        {BadgeWidget::LTS,          {"rgba(233, 117, 23, 0.15)", "rgba(233, 117, 23, 0.3)", "#e97517"}},
+        {BadgeWidget::RealTime,     {"rgba(52, 152, 219, 0.15)", "rgba(52, 152, 219, 0.3)", "#3498db"}},
+        {BadgeWidget::Installed,    {"rgba(60, 118, 61, 0.15)", "rgba(60, 118, 61, 0.3)", "#3c763d"}},
+        {BadgeWidget::Running,      {"rgba(60, 118, 61, 0.15)", "rgba(60, 118, 61, 0.3)", "#3c763d"}},
+        {BadgeWidget::EOL,          {"rgba(231, 76, 60, 0.15)", "rgba(231, 76, 60, 0.3)", "#e74c3c"}},
+        {BadgeWidget::Experimental, {"rgba(241, 196, 15, 0.15)", "rgba(241, 196, 15, 0.3)", "#f39c12"}},
     };
 }
 
@@ -59,7 +54,7 @@ void BadgeWidget::setType(Type type)
 
 void BadgeWidget::applyStyle()
 {
-    const auto& colors = colorSchemes[static_cast<int>(m_type)];
+    const auto& colors = colorSchemes.at(m_type);
     
     setStyleSheet(QString(
         "QLabel {"
