@@ -37,6 +37,8 @@ Kirigami.ApplicationWindow {
         width: 600
         height: 500
         title: qsTr("About MCP")
+        visible: false
+        flags: Qt.Dialog
 
         pageStack.initialPage: About {}
     }
