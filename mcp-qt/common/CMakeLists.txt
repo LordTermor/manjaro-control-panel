@@ -19,10 +19,6 @@ target_link_libraries(mcp-qt-common
     Qt6::Qml
     Qt6::QuickWidgets
     Qt6::QuickControls2
-    KF6::KirigamiPlatform
-    KF6::I18n
-    KF6::CoreAddons
-    KF6::AuthCore
 )
 
 target_include_directories(mcp-qt-common

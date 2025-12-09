@@ -7,9 +7,6 @@
 
 #include "VersionInfo.h"
 
-#include <KCoreAddons/kcoreaddons_version.h>
-#include <Kirigami/Platform/kirigamiplatform_version.h>
-
 #include <pamac/version.hpp>
 
 namespace mcp::qt::common {
@@ -33,12 +30,12 @@ QString VersionInfo::qtVersion() const
 
 QString VersionInfo::kf6Version() const
 {
-    return QStringLiteral(KCOREADDONS_VERSION_STRING);
+    return QStringLiteral("N/A");
 }
 
 QString VersionInfo::kirigamiVersion() const
 {
-    return QStringLiteral(KIRIGAMIPLATFORM_VERSION_STRING);
+    return QStringLiteral("N/A");
 }
 
 QString VersionInfo::libpamacVersion() const
