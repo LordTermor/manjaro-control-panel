@@ -33,10 +33,11 @@ KernelItemWidget::KernelItemWidget(Mode mode, QWidget* parent)
     
     connect(m_actionButton, &QPushButton::clicked, this, [this]() {
         if (m_isInUse) return;
+        KernelData data = getKernelData();
         if (m_isInstalled) {
-            Q_EMIT removeClicked(m_name);
+            Q_EMIT removeClicked(data);
         } else {
-            Q_EMIT installClicked(m_name, m_extraModules);
+            Q_EMIT installClicked(data);
         }
     });
     
@@ -205,6 +206,19 @@ void KernelItemWidget::setAlternateBackground(bool alternate)
         pal.setColor(QPalette::Window, pal.color(QPalette::AlternateBase));
         setPalette(pal);
     }
+}
+
+KernelData KernelItemWidget::getKernelData() const
+{
+    KernelData data;
+    data.name = m_name;
+    data.version = m_version;
+    data.changelogUrl = m_changelogUrl;
+    data.extraModules = m_extraModules;
+    data.isInstalled = m_isInstalled;
+    data.isInUse = m_isInUse;
+    data.isLTS = m_isLTS;
+    return data;
 }
 
 } // namespace mcp::qt::kernel

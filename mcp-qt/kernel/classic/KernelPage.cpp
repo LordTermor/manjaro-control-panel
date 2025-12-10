@@ -221,14 +221,14 @@ void KernelPage::populateKernelList()
     m_kernelListLayout->addStretch();
 }
 
-void KernelPage::onInstallClicked(const QString& name, const QStringList& extraModules)
+void KernelPage::onInstallClicked(const KernelData& kernelData)
 {
-    confirmAndInstall(name, extraModules);
+    confirmAndInstall(kernelData);
 }
 
-void KernelPage::onRemoveClicked(const QString& name)
+void KernelPage::onRemoveClicked(const KernelData& kernelData)
 {
-    confirmAndRemove(name);
+    confirmAndRemove(kernelData);
 }
 
 void KernelPage::onChangelogClicked(const QString& changelogUrl)
@@ -238,13 +238,13 @@ void KernelPage::onChangelogClicked(const QString& changelogUrl)
     }
 }
 
-void KernelPage::confirmAndInstall(const QString& kernelName, const QStringList& extraModules)
+void KernelPage::confirmAndInstall(const KernelData& kernelData)
 {
-    QString message = tr("Install Linux kernel %1?").arg(kernelName);
+    QString message = tr("Install Linux kernel %1?").arg(kernelData.name);
     
-    if (!extraModules.isEmpty()) {
+    if (!kernelData.extraModules.isEmpty()) {
         message += "\n\n" + tr("The following packages will also be installed:");
-        for (const QString& mod : extraModules) {
+        for (const QString& mod : kernelData.extraModules) {
             message += "\n  • " + mod;
         }
     }
@@ -258,22 +258,22 @@ void KernelPage::confirmAndInstall(const QString& kernelName, const QStringList&
     );
     
     if (reply == QMessageBox::Yes) {
-        m_viewModel->installKernel(kernelName);
+        m_viewModel->installKernel(kernelData);
     }
 }
 
-void KernelPage::confirmAndRemove(const QString& kernelName)
+void KernelPage::confirmAndRemove(const KernelData& kernelData)
 {
     QMessageBox::StandardButton reply = QMessageBox::question(
         this,
         tr("Confirm Removal"),
-        tr("Remove Linux kernel %1?\n\nThis action cannot be undone.").arg(kernelName),
+        tr("Remove Linux kernel %1?\n\nThis action cannot be undone.").arg(kernelData.name),
         QMessageBox::Yes | QMessageBox::No,
         QMessageBox::No
     );
     
     if (reply == QMessageBox::Yes) {
-        m_viewModel->removeKernel(kernelName);
+        m_viewModel->removeKernel(kernelData);
     }
 }
 

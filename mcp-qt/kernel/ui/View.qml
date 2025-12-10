@@ -21,21 +21,19 @@ QQC2.Page {
         id: confirmationDialog
 
         property bool uninstallation: false
-        property string kernelName: ""
-        property var extraModules: []
+        property var kernelData: null
 
         onAccepted: {
             if (!confirmationDialog.uninstallation) {
-                vm.installKernel(confirmationDialog.kernelName)
+                vm.installKernel(confirmationDialog.kernelData)
             } else {
-                vm.removeKernel(confirmationDialog.kernelName)
+                vm.removeKernel(confirmationDialog.kernelData)
             }
         }
 
-        function open(currentTransactionKernelName: string, uninstallation: bool, extraMods: var) {
-            confirmationDialog.kernelName = currentTransactionKernelName
+        function open(kernelData: var, uninstallation: bool) {
+            confirmationDialog.kernelData = kernelData
             confirmationDialog.uninstallation = uninstallation
-            confirmationDialog.extraModules = extraMods || []
             confirmationDialog.visible = true
         }
 
@@ -48,8 +46,8 @@ QQC2.Page {
                 textFormat: Text.MarkdownText
                 wrapMode: Text.WordWrap
                 text: !confirmationDialog.uninstallation 
-                    ? qsTr("New kernel **%1** is ready to install.").arg(confirmationDialog.kernelName)
-                    : qsTr("Do you want to remove **%1**?").arg(confirmationDialog.kernelName)
+                    ? qsTr("New kernel **%1** is ready to install.").arg(confirmationDialog.kernelData?.name ?? "")
+                    : qsTr("Do you want to remove **%1**?").arg(confirmationDialog.kernelData?.name ?? "")
             }
             
             Kirigami.ShadowedRectangle {
@@ -85,7 +83,7 @@ QQC2.Page {
                         Layout.fillWidth: true
                         Layout.preferredHeight: contentHeight
 
-                        model: confirmationDialog.extraModules
+                        model: confirmationDialog.kernelData?.extraModules ?? []
                         interactive: false
                         spacing: Kirigami.Units.smallSpacing
 
@@ -185,9 +183,9 @@ QQC2.Page {
                 Qt.openUrlExternally(changelogUrl)
             }
 
-            onInstall: (name, extraModules) => confirmationDialog.open(name, false, extraModules)
+            onInstall: (kernelData) => confirmationDialog.open(kernelData, false)
 
-            onRemove: (name, extraModules) => confirmationDialog.open(name, true, extraModules)
+            onRemove: (kernelData) => confirmationDialog.open(kernelData, true)
         }
 
         Item {
@@ -208,9 +206,9 @@ QQC2.Page {
                     Qt.openUrlExternally(changelogUrl)
                 }
 
-                onInstall: (pkgName, extraModules) => confirmationDialog.open(pkgName, false, extraModules)
+                onInstall: (kernelData) => confirmationDialog.open(kernelData, false)
                 
-                onRemove: (pkgName, extraModules) => confirmationDialog.open(pkgName, true, extraModules)
+                onRemove: (kernelData) => confirmationDialog.open(kernelData, true)
                 
             }
 

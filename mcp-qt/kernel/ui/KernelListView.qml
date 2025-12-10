@@ -7,8 +7,8 @@ ListView {
     id: root
 
     signal showChangelog(string changelogUrl)
-    signal install(string pkgName, var extraModules)
-    signal remove(string pkgName, var extraModules)
+    signal install(kernelData: var)
+    signal remove(kernelData: var)
     
     property bool actionsEnabled: true
 
@@ -35,7 +35,7 @@ ListView {
         actionsEnabled: root.actionsEnabled
 
         onShowChangelog: root.showChangelog(changelogUrl)
-        onInstall: root.install(name, extraModules)
-        onRemove: root.remove(name, extraModules)
+        onInstall: (kernelData) => root.install(kernelData)
+        onRemove: (kernelData) => root.remove(kernelData)
     }
 }

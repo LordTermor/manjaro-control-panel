@@ -7,6 +7,7 @@
 #include "KernelListModel.h"
 
 #include <QMetaEnum>
+#include "KernelData.h"
 
 namespace mcp::qt::kernel {
 
@@ -58,6 +59,26 @@ QVariant KernelListModel::data(const QModelIndex &index, int role) const
             modules.append(QString::fromStdString(mod));
         }
         return modules;
+    }
+    case KernelData: {
+        mcp::qt::kernel::KernelData kernelData;
+        kernelData.name = QString::fromStdString(el.package_name);
+        kernelData.version = QString::fromStdString(el.version.to_string());
+        kernelData.isInUse = el.is_in_use();
+        kernelData.isRecommended = el.is_recommended();
+        kernelData.isInstalled = el.is_installed();
+        kernelData.majorVersion = el.version.major;
+        kernelData.minorVersion = el.version.minor;
+        kernelData.changelogUrl = QString::fromStdString(el.changelog_url);
+        kernelData.isLTS = el.is_lts();
+        
+        QStringList extraModsList;
+        for (const auto& mod : el.extra_modules) {
+            extraModsList.append(QString::fromStdString(mod));
+        }
+        kernelData.extraModules = extraModsList;
+        
+        return QVariant::fromValue(kernelData);
     }
     }
 

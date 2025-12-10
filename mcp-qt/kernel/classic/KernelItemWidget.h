@@ -40,10 +40,11 @@ public:
     QStringList extraModules() const { return m_extraModules; }
     bool isInstalled() const { return m_isInstalled; }
     bool isInUse() const { return m_isInUse; }
+    KernelData getKernelData() const;
 
 Q_SIGNALS:
-    void installClicked(const QString& name, const QStringList& extraModules);
-    void removeClicked(const QString& name);
+    void installClicked(const KernelData& kernelData);
+    void removeClicked(const KernelData& kernelData);
     void changelogClicked(const QString& changelogUrl);
 
 private:

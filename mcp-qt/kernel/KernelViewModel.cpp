@@ -35,24 +35,26 @@ KernelListModel *KernelViewModel::model() const
     return &m_model;
 }
 
-void KernelViewModel::installKernel(const QString &pkgName)
+void KernelViewModel::installKernel(const KernelData &kernelData)
 {
-    setCurrentTransactionKernelName(pkgName);
+    setCurrentTransactionKernelName(kernelData.name);
     
     QStringList packages;
-    packages << pkgName;
-    packages << (pkgName + "-headers");
+    packages << kernelData.name;
+    packages << (kernelData.name + "-headers");
+    packages << kernelData.extraModules;
     
     m_transactionLauncher.installPackages(packages);
 }
 
-void KernelViewModel::removeKernel(const QString &pkgName)
+void KernelViewModel::removeKernel(const KernelData &kernelData)
 {
-    setCurrentTransactionKernelName(pkgName);
+    setCurrentTransactionKernelName(kernelData.name);
     
     QStringList packages;
-    packages << pkgName;
-    packages << (pkgName + "-headers");
+    packages << kernelData.name;
+    packages << (kernelData.name + "-headers");
+    packages << kernelData.extraModules;
     
     m_transactionLauncher.removePackages(packages, false);
 }

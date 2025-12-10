@@ -12,6 +12,8 @@
 
 namespace mcp::qt::kernel {
 
+class KernelData;
+
 class KernelListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -30,7 +32,8 @@ public:
         MinorVersion,
         Category,
         ChangelogUrl,
-        ExtraModules
+        ExtraModules,
+        KernelData
     };
     Q_ENUM(Role)
 

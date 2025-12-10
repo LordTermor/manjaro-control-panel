@@ -7,8 +7,8 @@ Item {
     id: root
 
     signal showChangelog(string changelogUrl)
-    signal install(string name, var extraModules)
-    signal remove(string name, var extraModules)
+    signal install(kernelData: var)
+    signal remove(kernelData: var)
 
     required property var inUseKernel
     required property var recommendedKernel
@@ -44,18 +44,19 @@ Item {
                 isLTS: root.inUseKernel.isLTS
                 extraModules: root.inUseKernel.extraModules
                 changelogUrl: root.inUseKernel.changelogUrl
+                kernelData: root.inUseKernel
                 actionsEnabled: root.actionsEnabled
 
                 onShowChangelog: {
                     root.showChangelog(root.inUseKernel.changelogUrl)
                 }
 
-                onInstall: {
-                    root.install(root.inUseKernel.name, root.inUseKernel.extraModules)
+                onInstall: (kernelData) => {
+                    root.install(root.inUseKernel)
                 }
 
-                onRemove: {
-                    root.remove(root.inUseKernel.name, root.inUseKernel.extraModules)
+                onRemove: (kernelData) => {
+                    root.remove(root.inUseKernel)
                 }
             }
 
@@ -98,18 +99,19 @@ Item {
                 isLTS: root.recommendedKernel.isLTS
                 extraModules: root.recommendedKernel.extraModules
                 changelogUrl: root.recommendedKernel.changelogUrl
+                kernelData: root.recommendedKernel
                 actionsEnabled: root.actionsEnabled
 
                 onShowChangelog: {
                     root.showChangelog(root.recommendedKernel.changelogUrl)
                 }
 
-                onInstall: {
-                    root.install(root.recommendedKernel.name, root.recommendedKernel.extraModules)
+                onInstall: (kernelData) => {
+                    root.install(root.recommendedKernel)
                 }
 
-                onRemove: {
-                    root.remove(root.recommendedKernel.name, root.recommendedKernel.extraModules)
+                onRemove: (kernelData) => {
+                    root.remove(root.recommendedKernel)
                 }
             }
 

@@ -32,6 +32,7 @@ class KernelViewModel : public QObject
     Q_PROPERTY(mcp::qt::common::TransactionAgentLauncher *transactionLauncher READ transactionLauncher CONSTANT)
     Q_PROPERTY(QString currentTransactionKernelName READ currentTransactionKernelName WRITE
                    setCurrentTransactionKernelName NOTIFY currentTransactionKernelNameChanged)
+
     Q_PROPERTY(KernelData inUseKernelData READ inUseKernelData NOTIFY kernelsDataChanged)
     Q_PROPERTY(KernelData recommendedKernelData READ recommendedKernelData NOTIFY kernelsDataChanged)
 
@@ -46,8 +47,8 @@ public:
 
     KernelListModel *model() const;
 
-    Q_INVOKABLE void installKernel(const QString &pkgName);
-    Q_INVOKABLE void removeKernel(const QString &pkgName);
+    Q_INVOKABLE void installKernel(const KernelData &kernelData);
+    Q_INVOKABLE void removeKernel(const KernelData &kernelData);
 
     mcp::qt::common::TransactionAgentLauncher *transactionLauncher();
 

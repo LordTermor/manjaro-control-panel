@@ -8,8 +8,8 @@ Kirigami.AbstractCard {
     id: root
 
     signal showChangelog
-    signal install
-    signal remove
+    signal install(kernelData: var)
+    signal remove(kernelData: var)
 
     property bool actionsEnabled: true
 
@@ -24,6 +24,7 @@ Kirigami.AbstractCard {
     required property bool isLTS
     required property var extraModules
     required property string changelogUrl
+    required property var kernelData
 
     // State
     readonly property bool isRealtime: root.name.includes("-rt")
@@ -187,7 +188,7 @@ Kirigami.AbstractCard {
                 QQC2.ToolTip.visible: hovered
                 QQC2.ToolTip.text: qsTr("Remove")
                 
-                onClicked: root.remove()
+                onClicked: root.remove(root.kernelData)
             }
 
             QQC2.Button {
@@ -201,7 +202,7 @@ Kirigami.AbstractCard {
                 QQC2.ToolTip.visible: hovered
                 QQC2.ToolTip.text: qsTr("Install")
                 
-                onClicked: root.install()
+                onClicked: root.install(root.kernelData)
             }
         }
     }

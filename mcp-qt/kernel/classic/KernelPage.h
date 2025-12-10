@@ -33,16 +33,16 @@ public:
 private Q_SLOTS:
     void onKernelsDataChanged();
     void populateKernelList();
-    void onInstallClicked(const QString& name, const QStringList& extraModules);
-    void onRemoveClicked(const QString& name);
+    void onInstallClicked(const KernelData& kernelData);
+    void onRemoveClicked(const KernelData& kernelData);
     void onChangelogClicked(const QString& changelogUrl);
 
 private:
     void setupUi();
     void setupConnections();
     
-    void confirmAndInstall(const QString& kernelName, const QStringList& extraModules);
-    void confirmAndRemove(const QString& kernelName);
+    void confirmAndInstall(const KernelData& kernelData);
+    void confirmAndRemove(const KernelData& kernelData);
 
     KernelViewModel* m_viewModel;
     
