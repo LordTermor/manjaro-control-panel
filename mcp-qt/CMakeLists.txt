@@ -28,6 +28,7 @@ find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami I18n CoreAddons 
 add_subdirectory(common)
 
 add_subdirectory(kernel)
+add_subdirectory(mhwd)
 
 add_subdirectory(transaction-agent)
 

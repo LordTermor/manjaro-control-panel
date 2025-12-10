@@ -6,45 +6,89 @@
  */
 
 /*
- * Device - hardware device with pattern matching.
- * Thin wrapper around DeviceInfo that knows how to match against patterns.
+ * Device - hardware device with structured information access.
+ * Provides hardware IDs, human-readable descriptions, and system paths.
  */
 
 #pragma once
 
-#include "internal/Types.hpp"
+#include "Types.hpp"
+
+#include <string>
 
 namespace mcp::mhwd {
+
+struct DeviceInfo;  // Forward declare internal type
+struct HardwarePattern;  // Forward declare internal type
 
 /**
  * Hardware device detected on the system.
  * 
- * Represents a PCI or USB device with identity information
- * and ability to match against driver configuration patterns.
+ * Provides structured access to device information through nested types.
+ * 
+ * Usage:
+ *   const auto& ids = device.hardware_ids();
+ *   const auto& desc = device.description();
+ *   auto category = device.category();
  */
 class Device {
-    DeviceInfo info_;
-    BusType bus_type_;
-
 public:
     /**
-     * Construct device from detected hardware info.
+     * Hardware identification codes used for driver matching.
      */
-    Device(DeviceInfo info, BusType type)
-        : info_(std::move(info)), bus_type_(type)
-    {
-    }
-
-    [[nodiscard]] const DeviceInfo& info() const { return info_; }
-    [[nodiscard]] BusType bus_type() const { return bus_type_; }
-
+    struct HardwareIds {
+        std::string vendor;    // "10de"
+        std::string device;    // "1c03"
+        std::string class_id;  // "0300"
+    };
+    
     /**
-     * Check if this device matches a hardware pattern.
-     * Supports wildcards (*) and blacklists.
+     * Human-readable device information.
      */
+    struct Description {
+        std::string vendor;        // "NVIDIA Corporation"
+        std::string model;         // "GeForce GTX 1050"
+        std::string device_class;  // "VGA compatible controller"
+    };
+    
+    /**
+     * System paths and identifiers.
+     */
+    struct SystemInfo {
+        std::string sysfs_path;  // "/sys/devices/pci0000:00/..."
+        std::string bus_id;      // "0000:01:00.0"
+    };
+
+    Device(DeviceInfo info, BusType type);
+
+    // === Hardware identification ===
+    
+    [[nodiscard]] const HardwareIds& hardware_ids() const { return hardware_ids_; }
+    
+    // === Human-readable information ===
+    
+    [[nodiscard]] const Description& description() const { return description_; }
+    
+    // === System information ===
+    
+    [[nodiscard]] const SystemInfo& system_info() const { return system_info_; }
+    [[nodiscard]] BusType bus_type() const { return bus_type_; }
+    
+    // === Device categorization ===
+    
+    [[nodiscard]] DeviceCategory category() const;
+
+private:
+    friend class Config;
+    friend class ConfigProvider;
     [[nodiscard]] bool matches(const HardwarePattern& pattern) const;
 
-    auto operator<=>(const Device& rhs) const = default;
+    HardwareIds hardware_ids_;
+    Description description_;
+    SystemInfo system_info_;
+    BusType bus_type_;
 };
+
+std::string_view to_string(DeviceCategory category);
 
 } // namespace mcp::mhwd

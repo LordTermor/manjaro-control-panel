@@ -9,9 +9,10 @@ add_library(libmcp-mhwd SHARED
     internal/Device.cpp
     internal/DeviceProvider.cpp
     internal/Config.cpp
-    internal/DriverManager.cpp
-    internal/PciDeviceScanner.cpp
-    internal/UsbDeviceScanner.cpp
+    internal/ConfigProvider.cpp
+    internal/DriverTransactionBuilder.cpp
+    internal/udev/PciDeviceScanner.cpp
+    internal/udev/UsbDeviceScanner.cpp
 )
 
 set_target_properties(libmcp-mhwd PROPERTIES

@@ -6,8 +6,8 @@
  */
 
 #include "mhwd/DeviceProvider.hpp"
-#include "PciDeviceScanner.hpp"
-#include "UsbDeviceScanner.hpp"
+#include "udev/PciDeviceScanner.hpp"
+#include "udev/UsbDeviceScanner.hpp"
 
 /*
  * Hardware detection coordinator.

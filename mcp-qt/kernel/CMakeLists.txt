@@ -1,10 +1,10 @@
 # ============================================================================
-# mcp-qt-page-kernel - Kernel management Qt/QML components
+# mcp-qt-kernel - Kernel management Qt/QML components
 # ============================================================================
 
 find_package(QCoro6 REQUIRED COMPONENTS Core)
 
-add_library(mcp-qt-page-kernel SHARED
+add_library(mcp-qt-kernel SHARED
     KernelData.h
     KernelListModel.cpp
     KernelListModel.h
@@ -13,33 +13,33 @@ add_library(mcp-qt-page-kernel SHARED
     kernel.qrc
 )
 
-target_link_libraries(mcp-qt-page-kernel
+target_link_libraries(mcp-qt-kernel
     PRIVATE
     libmcp-kernel
     mcp-qt-common
     QCoro6::Core
 )
 
-install(TARGETS mcp-qt-page-kernel)
+install(TARGETS mcp-qt-kernel)
 
 # Standalone QML executable
 if(MCP_BUILD_QT)
-    add_executable(mcp-qt standalone_main.cpp)
+    add_executable(mcp-qt-kernels standalone_main.cpp)
 
-    target_link_libraries(mcp-qt
+    target_link_libraries(mcp-qt-kernels
         PRIVATE
-        mcp-qt-page-kernel
+        mcp-qt-kernel
         libmcp-kernel
         mcp-qt-common
         Qt6::Quick
         Qt6::Qml
     )
 
-    target_compile_definitions(mcp-qt PRIVATE
+    target_compile_definitions(mcp-qt-kernels PRIVATE
         MCP_VERSION="${MCP_VERSION}"
     )
 
-    install(TARGETS mcp-qt)
+    install(TARGETS mcp-qt-kernels)
 endif()
 
 # Classic Qt Widgets standalone executable
@@ -56,7 +56,7 @@ if(MCP_BUILD_QT_CLASSIC)
 
     target_link_libraries(mcp-qt-classic
         PRIVATE
-        mcp-qt-page-kernel
+        mcp-qt-kernel
         libmcp-kernel
         mcp-qt-common
         Qt6::Widgets
