@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/mhwd">
+        <file>ui/standalone_main.qml</file>
+        <file>ui/View.qml</file>
+        <file>ui/CategorySection.qml</file>
+        <file>ui/DeviceCard.qml</file>
+        <file>ui/DriverDetailsPanel.qml</file>
+        <file>ui/DriverItem.qml</file>
+        <file>assets/amd-svgrepo-com.svg</file>
+        <file>assets/nvidia-svgrepo-com.svg</file>
+        <file>assets/intel-svgrepo-com.svg</file>
+    </qresource>
+</RCC>

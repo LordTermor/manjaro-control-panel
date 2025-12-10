@@ -13,6 +13,8 @@
 
 #include "kernel/KernelProvider.hpp"
 
+#include <coro/sync_wait.hpp>
+
 #include <fmt/core.h>
 
 #include <string>
@@ -30,7 +32,7 @@ public:
 
     [[nodiscard]] int execute() override {
         KernelProvider provider;
-        auto result = provider.get_kernel(m_package_name);
+        auto result = coro::sync_wait(provider.get_kernel(m_package_name));
 
         if (!result) {
             switch (result.error()) {

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <mhwd/DriverManager.hpp>
+#include <mhwd/ConfigProvider.hpp>
 
 namespace mcp::cli::mhwd {
 
@@ -17,14 +17,14 @@ namespace mcp::cli::mhwd {
 class InstallCommand {
 public:
     InstallCommand(
-        mcp::mhwd::DriverManager& manager,
+        mcp::mhwd::ConfigProvider& provider,
         const std::string& config_name,
         mcp::mhwd::BusType type,
         bool force,
         bool no_confirm,
         bool color_enabled
     )
-        : manager_(manager)
+        : provider_(provider)
         , config_name_(config_name)
         , type_(type)
         , force_(force)
@@ -36,7 +36,7 @@ public:
     int execute();
 
 private:
-    mcp::mhwd::DriverManager& manager_;
+    mcp::mhwd::ConfigProvider& provider_;
     std::string config_name_;
     mcp::mhwd::BusType type_;
     bool force_;

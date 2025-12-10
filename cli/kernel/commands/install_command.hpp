@@ -13,6 +13,8 @@
 
 #include "kernel/KernelProvider.hpp"
 
+#include <coro/sync_wait.hpp>
+
 #include <pamac/database.hpp>
 #include <pamac/transaction.hpp>
 
@@ -47,7 +49,7 @@ public:
 
     [[nodiscard]] int execute() override {
         KernelProvider provider;
-        auto kernel_result = provider.get_kernel(m_package_name);
+        auto kernel_result = coro::sync_wait(provider.get_kernel(m_package_name));
 
         if (!kernel_result) {
             switch (kernel_result.error()) {
@@ -89,7 +91,7 @@ public:
         txn.add_pkg_to_install(m_package_name);
 
         std::string headers_pkg = m_package_name + "-headers";
-        auto headers_result = provider.get_kernel(headers_pkg);
+        auto headers_result = coro::sync_wait(provider.get_kernel(headers_pkg));
         if (headers_result && !headers_result->is_installed()) {
             out().info(fmt::format("Also installing headers package: {}", headers_pkg));
             txn.add_pkg_to_install(headers_pkg);

@@ -17,7 +17,7 @@
 #include "KernelData.h"
 
 #include <kernel/KernelProvider.hpp>
-#include <kernel/KernelTransactionBuilder.hpp>
+#include <kernel/Transaction.hpp>
 
 #include <pamac/database.hpp>
 

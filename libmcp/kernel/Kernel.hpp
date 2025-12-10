@@ -52,7 +52,7 @@ struct KernelFlags {
     bool lts : 1 = false;
     bool recommended : 1 = false;
     bool installed : 1 = false;
-    bool not_supported : 1 = false;  // Not in official repos (obsolete/third-party)
+    bool not_supported : 1 = false;
     bool real_time : 1 = false;
     bool in_use : 1 = false;
     bool experimental : 1 = false;
@@ -88,5 +88,7 @@ struct Kernel {
         return version <=> rhs.version;
     }
 };
+
+using KernelVector = std::vector<Kernel>;
 
 } // namespace mcp::kernel

@@ -6,9 +6,8 @@ add_library(libmcp-kernel SHARED
     Kernel.hpp
     KernelProvider.hpp
     KernelProvider.cpp
-    KernelTransactionBuilder.hpp
-    KernelTransactionBuilder.cpp
-    
+    Transaction.hpp
+    Transaction.cpp
 )
 
 set_target_properties(libmcp-kernel PROPERTIES

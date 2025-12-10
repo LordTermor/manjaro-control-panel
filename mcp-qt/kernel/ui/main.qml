@@ -12,14 +12,6 @@ KCMUtils.SimpleKCM {
 
     property var vm: kcm.vm
 
-    actions: [
-        Kirigami.Action {
-            text: qsTr("About Manjaro Control Panel")
-            icon.name: "manjaro"
-            onTriggered: kcm.push("About.qml")
-        }
-    ]
-
     View {
         anchors.fill: parent
     }

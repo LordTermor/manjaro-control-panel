@@ -12,10 +12,7 @@
 
 #pragma once
 
-#include "Types.hpp"
-#include "../Device.hpp"
-
-#include <vector>
+#include "DeviceScanner.hpp"
 
 struct udev_device;
 
@@ -24,15 +21,15 @@ namespace mcp::mhwd {
 /**
  * Scans PCI bus for devices using udev.
  */
-class PciDeviceScanner {
+class PciDeviceScanner : public DeviceScanner<PciDeviceScanner> {
 public:
-    /**
-     * Scan PCI bus and return all valid devices.
-     */
-    static std::vector<Device> scan();
+    using DeviceScanner<PciDeviceScanner>::scan;
 
 private:
+    friend class DeviceScanner<PciDeviceScanner>;
+    
     static constexpr const char* subsystem() { return "pci"; }
+    static constexpr BusType bus_type() { return BusType::PCI; }
     
     static DeviceInfo extract_info(udev_device* device, const char* syspath);
     static bool is_valid(udev_device* device);

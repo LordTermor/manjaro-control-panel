@@ -6,7 +6,6 @@
         <file>ui/ChangelogSheet.qml</file>
         <file>ui/standalone_main.qml</file>
         <file>ui/SelectedKernels.qml</file>
-        <file>ui/About.qml</file>
     </qresource>
     <qresource prefix="/assets">
         <file alias="icon.svg">../data/assets/icon.svg</file>

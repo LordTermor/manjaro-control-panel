@@ -6,8 +6,8 @@
  */
 
 #include "mhwd/DeviceProvider.hpp"
-#include "PciDeviceScanner.hpp"
-#include "UsbDeviceScanner.hpp"
+#include "udev/PciDeviceScanner.hpp"
+#include "udev/UsbDeviceScanner.hpp"
 
 /*
  * Hardware detection coordinator.
@@ -16,9 +16,9 @@
 
 namespace mcp::mhwd {
 
-std::vector<Device> DeviceProvider::get_all_devices() const
+DeviceVector DeviceProvider::all_devices() const
 {
-    std::vector<Device> all;
+    DeviceVector all;
     all.reserve(pci_devices_.size() + usb_devices_.size());
 
     all.insert(all.end(), pci_devices_.begin(), pci_devices_.end());
@@ -27,10 +27,12 @@ std::vector<Device> DeviceProvider::get_all_devices() const
     return all;
 }
 
-void DeviceProvider::scan()
+Task<void> DeviceProvider::scan()
 {
+    // udev scanning is fast local I/O, wrapped in coroutine for API consistency
     pci_devices_ = PciDeviceScanner::scan();
     usb_devices_ = UsbDeviceScanner::scan();
+    co_return;
 }
 
 } // namespace mcp::mhwd

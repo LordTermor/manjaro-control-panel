@@ -13,6 +13,8 @@
 
 #include "kernel/KernelProvider.hpp"
 
+#include <coro/sync_wait.hpp>
+
 namespace mcp::cli::kernel {
 
 using namespace mcp::kernel;
@@ -21,7 +23,7 @@ class RunningCommand : public Command {
 public:
     [[nodiscard]] int execute() override {
         KernelProvider provider;
-        auto result = provider.get_running_kernel();
+        auto result = coro::sync_wait(provider.get_running_kernel());
 
         if (!result) {
             switch (result.error()) {

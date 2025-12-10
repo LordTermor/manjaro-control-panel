@@ -15,10 +15,9 @@
 #include "commands/remove_command.hpp"
 
 #include <mhwd/DeviceProvider.hpp>
-#include <mhwd/DriverManager.hpp>
+#include <mhwd/ConfigProvider.hpp>
 
-#include <pamac/config.hpp>
-#include <pamac/database.hpp>
+#include <coro/sync_wait.hpp>
 
 #include <CLI/CLI.hpp>
 #include <fmt/core.h>
@@ -32,11 +31,8 @@ int main(int argc, char** argv) {
     app.set_version_flag("-V,--version", "1.0.0");
 
     bool no_color = false;
-    std::string config_path = "/etc/pamac.conf";
 
     app.add_flag("--no-color", no_color, "Disable colored output");
-    app.add_option("-c,--config", config_path, "Path to pamac.conf")
-       ->check(CLI::ExistingFile);
 
     auto* list_cmd = app.add_subcommand("list", "List hardware drivers");
     list_cmd->alias("ls");
@@ -84,27 +80,14 @@ int main(int argc, char** argv) {
 
     CLI11_PARSE(app, argc, argv);
 
-    auto status = pamac::Database::initialize(config_path);
-    if (status != pamac::DatabaseStatus::Ok &&
-        status != pamac::DatabaseStatus::AlreadyInitialized) {
-        fmt::print(stderr, "Error: Failed to initialize package database.\n");
-        return 1;
-    }
-
     mcp::mhwd::DeviceProvider device_provider;
-    device_provider.scan();
-
-    auto db_result = pamac::Database::instance();
-    if (!db_result) {
-        fmt::print(stderr, "Error: Failed to get database instance.\n");
-        return 1;
-    }
+    coro::sync_wait(device_provider.scan());
     
-    mcp::mhwd::DriverManager driver_manager(device_provider, db_result->get());
+    mcp::mhwd::ConfigProvider config_provider(device_provider);
 
     if (*list_cmd) {
         return ListCommand(
-            driver_manager,
+            config_provider,
             device_provider,
             list_pci,
             list_usb,
@@ -118,7 +101,7 @@ int main(int argc, char** argv) {
     if (*install_cmd) {
         mcp::mhwd::BusType type = install_pci ? mcp::mhwd::BusType::PCI : mcp::mhwd::BusType::USB;
         return InstallCommand(
-            driver_manager,
+            config_provider,
             install_config,
             type,
             force_install,
@@ -130,7 +113,7 @@ int main(int argc, char** argv) {
     if (*remove_cmd) {
         mcp::mhwd::BusType type = remove_pci ? mcp::mhwd::BusType::PCI : mcp::mhwd::BusType::USB;
         return RemoveCommand(
-            driver_manager,
+            config_provider,
             remove_config,
             type,
             no_confirm,

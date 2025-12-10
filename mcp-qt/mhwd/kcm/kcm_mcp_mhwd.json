@@ -1,0 +1,22 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "agrinev@manjaro.org",
+                "Name": "Artem Grinev"
+            }
+        ],
+        "Description": "Manage hardware drivers and configurations",
+        "FormFactors": [
+            "desktop"
+        ],
+        "Icon": "yast-hardware-group",
+        "License": "GPL-3.0-or-later",
+        "Name": "Hardware Drivers",
+        "Version": "1.0",
+        "Website": "https://manjaro.org"
+    },
+    "X-KDE-Keywords": "driver,hardware,mhwd,graphics,network,device",
+    "X-KDE-System-Settings-Parent-Category": "system-administration-mcp",
+    "X-KDE-Weight": 20
+}

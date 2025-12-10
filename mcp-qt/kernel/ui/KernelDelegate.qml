@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import QtQuick.Effects
 import org.kde.kirigami as Kirigami
+import org.manjaro.mcp.components
 
 Kirigami.AbstractCard {
     id: root
@@ -65,58 +66,18 @@ Kirigami.AbstractCard {
                     font.weight: Font.DemiBold
                 }
 
-                Rectangle {
-                    width: rtLabel.width + 16
-                    height: rtLabel.height + 4
-                    
+                Badge {
                     visible: root.isRealtime
-                    color: "transparent"
-                    border.color: Qt.rgba(0.2, 0.6, 0.85, 0.3)
-                    border.width: 1
-                    radius: 4
-
-                    Rectangle {
-                        anchors.fill: parent
-                        color: Qt.rgba(0.2, 0.6, 0.85, 0.15)
-                        radius: parent.radius
-                    }
-
-                    QQC2.Label {
-                        id: rtLabel
-                        anchors.centerIn: parent
-                        text: qsTr("Real-Time")
-                        font.pointSize: 8
-                        font.weight: Font.Bold
-                        font.capitalization: Font.AllUppercase
-                        color: "#3498db"
-                    }
+                    
+                    text: qsTr("Real-Time")
+                    badgeColor: "#3498db"
                 }
 
-                Rectangle {
-                    width: ltsLabel.width + 16
-                    height: ltsLabel.height + 4
-                    
+                Badge {
                     visible: root.isLTS
-                    color: "transparent"
-                    border.color: Qt.rgba(0.91, 0.46, 0.09, 0.3)
-                    border.width: 1
-                    radius: 4
-
-                    Rectangle {
-                        anchors.fill: parent
-                        color: Qt.rgba(0.91, 0.46, 0.09, 0.15)
-                        radius: parent.radius
-                    }
-
-                    QQC2.Label {
-                        id: ltsLabel
-                        anchors.centerIn: parent
-                        text: qsTr("LTS")
-                        font.pointSize: 8
-                        font.weight: Font.Bold
-                        font.capitalization: Font.AllUppercase
-                        color: "#e97517"
-                    }
+                    
+                    text: qsTr("LTS")
+                    badgeColor: "#e97517"
                 }
             }
 
