@@ -10,7 +10,8 @@
 
 #include "KernelViewModel.h"
 
-#include <qcoro/task.h>
+#include <kernel/Transaction.hpp>
+#include <QCoroTask>
 #include "pamac/transaction.hpp"
 
 #include <QQmlEngine>
@@ -62,7 +63,7 @@ void KernelViewModel::installKernel(const KernelData &kernelData)
     setCurrentTransactionKernelName(kernelName);
     
     [this, kernelName]() -> QCoro::Task<void> {
-        auto cmd_result = co_await mcp::kernel::KernelTransactionBuilder::install(
+        auto cmd_result = co_await mcp::kernel::build_install(
             kernelName.toStdString(),
             true,  // with_headers
             true   // with_extra_modules
@@ -106,7 +107,7 @@ void KernelViewModel::removeKernel(const KernelData &kernelData)
     setCurrentTransactionKernelName(kernelName);
     
     [this, kernelName]() -> QCoro::Task<void> {
-        auto cmd_result = co_await mcp::kernel::KernelTransactionBuilder::remove(
+        auto cmd_result = co_await mcp::kernel::build_remove(
             kernelName.toStdString(),
             true,   // with_headers
             true,   // with_extra_modules
@@ -181,7 +182,7 @@ void KernelViewModel::fetchAndUpdateKernels()
 {
     // Launch async kernel fetching with QCoro
     [this]() -> QCoro::Task<void> {
-        auto result = co_await m_provider.get_kernels_async();
+        auto result = co_await m_provider.get_kernels();
 
         if (!result) {
             qWarning() << "Failed to fetch kernels:" << static_cast<int>(result.error());

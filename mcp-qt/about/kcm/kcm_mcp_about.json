@@ -1,0 +1,22 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "agrinev@manjaro.org",
+                "Name": "Artem Grinev"
+            }
+        ],
+        "Description": "About Manjaro Control Panel",
+        "FormFactors": [
+            "desktop"
+        ],
+        "Icon": "manjaro",
+        "License": "GPL-3.0-or-later",
+        "Name": "About",
+        "Version": "1.0",
+        "Website": "https://manjaro.org"
+    },
+    "X-KDE-Keywords": "about,mcp,manjaro,control,panel,info,information",
+    "X-KDE-System-Settings-Parent-Category": "system-administration-mcp",
+    "X-KDE-Weight": 100
+}

@@ -10,42 +10,6 @@
 
 namespace mcp::mhwd {
 
-std::vector<Device> PciDeviceScanner::scan()
-{
-    using namespace udev;
-    
-    std::vector<Device> devices;
-
-    UdevPtr udev_ctx(udev_new());
-    if (!udev_ctx) {
-        return devices;
-    }
-
-    UdevEnumeratePtr enumerate(udev_enumerate_new(udev_ctx.get()));
-    if (!enumerate) {
-        return devices;
-    }
-
-    udev_enumerate_add_match_subsystem(enumerate.get(), subsystem());
-    udev_enumerate_scan_devices(enumerate.get());
-
-    udev_list_entry* entry;
-    udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(enumerate.get()))
-    {
-        const char* syspath = udev_list_entry_get_name(entry);
-        UdevDevicePtr device(udev_device_new_from_syspath(udev_ctx.get(), syspath));
-        
-        if (!device || !is_valid(device.get())) {
-            continue;
-        }
-
-        DeviceInfo info = extract_info(device.get(), syspath);
-        devices.emplace_back(std::move(info), BusType::PCI);
-    }
-
-    return devices;
-}
-
 DeviceInfo PciDeviceScanner::extract_info(udev_device* device, const char* syspath)
 {
     using namespace udev;
@@ -62,7 +26,8 @@ DeviceInfo PciDeviceScanner::extract_info(udev_device* device, const char* syspa
         .vendor_name = safe_property(device, "ID_VENDOR_FROM_DATABASE"),
         .device_name = safe_property(device, "ID_MODEL_FROM_DATABASE"),
         .sysfs_bus_id = safe_string(udev_device_get_sysname(device)),
-        .sysfs_id = safe_string(syspath)
+        .sysfs_id = safe_string(syspath),
+        .driver = safe_string(udev_device_get_driver(device))
     };
 }
 

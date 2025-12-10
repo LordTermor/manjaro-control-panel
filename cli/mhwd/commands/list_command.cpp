@@ -9,6 +9,8 @@
 #include "common/output.hpp"
 #include "common/symbols.hpp"
 
+#include <coro/sync_wait.hpp>
+
 #include <fmt/color.h>
 #include <fmt/core.h>
 
@@ -40,8 +42,8 @@ int ListCommand::execute()
 
 void ListCommand::list_configs(mcp::mhwd::BusType type)
 {
-    auto installed_result = manager_.get_installed_configs(type);
-    auto available_result = manager_.get_available_configs(type);
+    auto installed_result = coro::sync_wait(provider_.get_installed_configs(type));
+    auto available_result = coro::sync_wait(provider_.get_available_configs(type));
 
     if (!installed_result && !available_result) {
         out().error("Error loading configurations");
@@ -51,7 +53,7 @@ void ListCommand::list_configs(mcp::mhwd::BusType type)
     std::vector<mcp::mhwd::Config> installed = installed_result.value_or(std::vector<mcp::mhwd::Config>{});
     std::vector<mcp::mhwd::Config> available = available_result.value_or(std::vector<mcp::mhwd::Config>{});
 
-    auto matching_configs = manager_.find_matching_configs(type);
+    auto matching_configs = coro::sync_wait(provider_.find_matching_configs(type));
 
     if (matching_configs.empty()) {
         out().info("No suitable drivers found for your hardware");
@@ -117,15 +119,15 @@ void ListCommand::print_config(const mcp::mhwd::Config& config, bool is_installe
         fmt::print(" {}", fmt::styled(fmt::format("v{}", config.version()), 
                                      fmt::emphasis::faint));
         fmt::print(" {} ", fmt::styled(symbol::bullet, fmt::fg(fmt::color::dark_gray)));
-        fmt::print("{}", config.info());
+        fmt::print("{}", config.description());
         
-        if (config.free_driver()) {
+        if (config.is_free_driver()) {
             fmt::print(" {}", fmt::styled("[free]", fmt::fg(fmt::color::green)));
         } else {
             fmt::print(" {}", fmt::styled("[proprietary]", fmt::fg(fmt::color::yellow)));
         }
     } else {
-        if (!config.free_driver() && color_enabled_) {
+        if (!config.is_free_driver() && color_enabled_) {
             fmt::print(" {}", fmt::styled("⚡", fmt::fg(fmt::color::yellow)));
         }
     }

@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <kernel/KernelTransactionBuilder.hpp>
+#include <agent/Command.hpp>
 
 #include <QObject>
 #include <QProcess>
@@ -29,9 +29,9 @@ class TransactionAgentLauncher : public QObject
 
 public:
     explicit TransactionAgentLauncher(QObject* parent = nullptr);
-    ~TransactionAgentLauncher() override = default;
+    ~TransactionAgentLauncher() override;
 
-    void launchCommand(const mcp::kernel::AgentCommand& cmd);
+    void launchCommand(const mcp::agent::Command& cmd);
     
     // Legacy methods for backwards compatibility
     void installPackages(const QStringList& packages);

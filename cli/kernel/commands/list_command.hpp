@@ -15,6 +15,8 @@
 
 #include "kernel/KernelProvider.hpp"
 
+#include <coro/sync_wait.hpp>
+
 #include <fmt/core.h>
 
 #include <algorithm>
@@ -39,7 +41,7 @@ public:
 
     [[nodiscard]] int execute() override {
         KernelProvider provider;
-        auto result = provider.get_kernels();
+        auto result = coro::sync_wait(provider.get_kernels());
 
         if (!result) {
             return handle_error(result.error());

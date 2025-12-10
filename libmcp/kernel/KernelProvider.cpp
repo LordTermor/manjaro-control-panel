@@ -7,9 +7,6 @@
 
 #include "KernelProvider.hpp"
 
-#include <coro/sync_wait.hpp>
-#include <coro/task.hpp>
-
 #include <algorithm>
 #include <array>
 #include <regex>
@@ -21,8 +18,6 @@
 namespace mcp::kernel {
 
 namespace {
-
-constexpr std::string_view c_kernel_glob = "linux[0-9]*";
 
 constexpr std::array c_official_repos = {
     std::string_view{"core"},
@@ -93,8 +88,8 @@ std::optional<KernelVersion> KernelProvider::parse_version(const std::string& na
         return version;
     }
 
-// Handle special kernels like linux-lts, linux-zen
-if (name.starts_with("linux-") || name == "linux") {
+    // Handle special kernels like linux-lts, linux-zen
+    if (name.starts_with("linux-") || name == "linux") {
         // These don't have encoded version, need to get from package version
         return KernelVersion{};
     }
@@ -204,64 +199,11 @@ void KernelProvider::populate_kernel_metadata(Kernel& kernel) const
                            std::to_string(kernel.version.minor);
 }
 
-KernelResult<std::vector<Kernel>> KernelProvider::get_kernels(ProgressCallback progress) const
-{
-    auto packages = pamac::Database::instance().value().get().get_sync_pkgs_by_glob(std::string(c_kernel_glob));
-
-    std::vector<Kernel> kernels;
-    kernels.reserve(packages.size());
-
-    for (const auto& pkg : packages) {
-        if (auto kernel = parse_kernel(pkg)) {
-            kernels.push_back(std::move(*kernel));
-        }
-    }
-
-    // Sort by version (newest first)
-    std::ranges::sort(kernels, std::greater{});
-
-    // Set LTS flags based on version and find latest non-in-use LTS
-    Kernel* latest_lts = nullptr;
-    for (auto& kernel : kernels) {
-        kernel.flags.lts = is_lts_version(kernel.version.major, kernel.version.minor);
-        
-        // Track latest LTS that's not in use and not real-time
-        if (kernel.flags.lts && !kernel.flags.in_use && !kernel.flags.real_time) {
-            if (!latest_lts || kernel.version > latest_lts->version) {
-                latest_lts = &kernel;
-            }
-        }
-    }
-
-    // Set recommended to latest LTS
-    if (latest_lts) {
-        latest_lts->flags.recommended = true;
-    }
-
-    // Populate metadata with progress reporting
-    int current = 0;
-    int total = static_cast<int>(kernels.size());
-    
-    for (auto& kernel : kernels) {
-        if (progress) {
-            progress(current, total, kernel.package_name);
-        }
-        populate_kernel_metadata(kernel);
-        ++current;
-    }
-    
-    if (progress) {
-        progress(total, total, "");
-    }
-
-    return kernels;
-}
-
-coro::task<KernelResult<std::vector<Kernel>>> KernelProvider::get_kernels_async(ProgressCallback progress) const
+Task<KernelResult<KernelVector>> KernelProvider::get_kernels(ProgressCallback progress) const
 {
     auto packages = co_await pamac::Database::instance().value().get().search_pkgs_async("linux");
 
-    std::vector<Kernel> kernels;
+    KernelVector kernels;
 
     for (const auto& pkg : packages) {
         const auto& name = pkg->name();
@@ -320,7 +262,7 @@ coro::task<KernelResult<std::vector<Kernel>>> KernelProvider::get_kernels_async(
     co_return kernels;
 }
 
-coro::task<KernelResult<Kernel>> KernelProvider::get_kernel_async(const std::string& package_name) const
+Task<KernelResult<Kernel>> KernelProvider::get_kernel(const std::string& package_name) const
 {
     auto db_result = pamac::Database::instance();
     if (!db_result) {
@@ -344,23 +286,7 @@ coro::task<KernelResult<Kernel>> KernelProvider::get_kernel_async(const std::str
     co_return *kernel;
 }
 
-KernelResult<Kernel> KernelProvider::get_kernel(const std::string& package_name) const
-{
-    auto pkg = pamac::Database::instance().value().get().get_pkg(package_name);
-
-    if (!pkg) {
-        return std::unexpected(KernelError::NotFound);
-    }
-
-    auto kernel = parse_kernel(pkg);
-    if (!kernel) {
-        return std::unexpected(KernelError::ParseError);
-    }
-
-    return *kernel;
-}
-
-coro::task<KernelResult<Kernel>> KernelProvider::get_running_kernel_async() const
+Task<KernelResult<Kernel>> KernelProvider::get_running_kernel() const
 {
     auto running = get_running_kernel_version();
     if (running.empty()) {
@@ -378,38 +304,12 @@ coro::task<KernelResult<Kernel>> KernelProvider::get_running_kernel_async() cons
 
     std::string package_name = "linux" + match[1].str() + match[2].str();
 
-    auto result = co_await get_kernel_async(package_name);
+    auto result = co_await get_kernel(package_name);
     if (result) {
         result->flags.in_use = true;
     }
 
     co_return result;
-}
-
-KernelResult<Kernel> KernelProvider::get_running_kernel() const
-{
-    auto running = get_running_kernel_version();
-    if (running.empty()) {
-        return std::unexpected(KernelError::NotFound);
-    }
-
-    // Extract kernel package name from running version
-    // Format: 6.6.10-1-MANJARO -> linux66
-    static const std::regex ver_regex(R"((\d+)\.(\d+)\.)");
-    std::smatch match;
-
-    if (!std::regex_search(running, match, ver_regex)) {
-        return std::unexpected(KernelError::ParseError);
-    }
-
-    std::string package_name = "linux" + match[1].str() + match[2].str();
-
-    auto result = get_kernel(package_name);
-    if (result) {
-        result->flags.in_use = true;
-    }
-
-    return result;
 }
 
 std::vector<std::string> KernelProvider::get_extra_modules(const std::string& package_name) const
@@ -425,29 +325,38 @@ std::vector<std::string> KernelProvider::get_extra_modules(const std::string& pa
     
     // Get currently installed extra modules on the running kernel
     // to determine what user actually uses
-    auto running_kernel_result = get_running_kernel();
+    // Note: This is sync because we need it for metadata population
+    auto running = get_running_kernel_version();
+    if (running.empty()) {
+        return modules;
+    }
+
+    static const std::regex ver_regex(R"((\d+)\.(\d+)\.)");
+    std::smatch match;
+    if (!std::regex_search(running, match, ver_regex)) {
+        return modules;
+    }
+    
+    std::string running_pkg = "linux" + match[1].str() + match[2].str();
     std::vector<std::string> installed_module_types;
     
-    if (running_kernel_result) {
-        const auto& running_pkg = running_kernel_result->package_name;
-        std::string glob_pattern = running_pkg + "-*";
-        auto running_packages = db.get_installed_pkgs_by_glob(glob_pattern);
+    std::string glob_pattern = running_pkg + "-*";
+    auto running_packages = db.get_installed_pkgs_by_glob(glob_pattern);
+    
+    for (const auto& pkg : running_packages) {
+        const auto& name = pkg->name();
         
-        for (const auto& pkg : running_packages) {
-            const auto& name = pkg->name();
-            
-            if (name == running_pkg + "-headers" || 
-                name.ends_with("-docs") || 
-                name.ends_with("-api-headers")) {
-                continue;
-            }
-            
-            // Extract module type (e.g., "nvidia", "virtualbox", "zfs")
-            // from "linux66-nvidia" -> "nvidia"
-            auto module_start = running_pkg.length() + 1; // +1 for the dash
-            if (module_start < name.length()) {
-                installed_module_types.push_back(name.substr(module_start));
-            }
+        if (name == running_pkg + "-headers" || 
+            name.ends_with("-docs") || 
+            name.ends_with("-api-headers")) {
+            continue;
+        }
+        
+        // Extract module type (e.g., "nvidia", "virtualbox", "zfs")
+        // from "linux66-nvidia" -> "nvidia"
+        auto module_start = running_pkg.length() + 1; // +1 for the dash
+        if (module_start < name.length()) {
+            installed_module_types.push_back(name.substr(module_start));
         }
     }
     
@@ -455,7 +364,7 @@ std::vector<std::string> KernelProvider::get_extra_modules(const std::string& pa
         return modules;
     }
     
-    std::string glob_pattern = package_name + "-*";
+    glob_pattern = package_name + "-*";
     auto packages = db.get_sync_pkgs_by_glob(glob_pattern);
     
     for (const auto& pkg : packages) {

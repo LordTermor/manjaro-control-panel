@@ -21,15 +21,17 @@ FetchContent_Declare(
 set(LIBCORO_BUILD_SHARED_LIBS OFF CACHE BOOL "Build libcoro as static library" FORCE)
 set(LIBCORO_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LIBCORO_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(LIBCORO_FEATURE_NETWORKING OFF CACHE BOOL "Disable networking (not needed)" FORCE)
+set(LIBCORO_FEATURE_NETWORKING ON CACHE BOOL "Enable networking for io_scheduler" FORCE)
 set(LIBCORO_FEATURE_TLS OFF CACHE BOOL "Disable TLS (not needed)" FORCE)
 
 FetchContent_MakeAvailable(libcoro)
 
-# libmcp - main library with ProgressFlattener and kernel utilities
+# libmcp - main library with ProgressFlattener
 add_library(libmcp SHARED
     ProgressFlattener.cpp
     ProgressFlattener.hpp
+    Types.hpp
+    agent/Command.hpp
 )
 
 set_target_properties(libmcp PROPERTIES
@@ -41,6 +43,7 @@ target_link_libraries(libmcp
         PkgConfig::SIGCXX
         PkgConfig::GLIB
         pamac::pamac-cpp
+        libcoro
 )
 
 target_include_directories(libmcp

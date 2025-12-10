@@ -12,7 +12,7 @@ kcmutils_add_qml_kcm(kcm_mcp_kernel SOURCES KernelKCModule.cpp KernelKCModule.h)
 target_link_libraries(kcm_mcp_kernel PRIVATE
     libmcp-kernel
     mcp-qt-common
-    mcp-qt-page-kernel
+    mcp-qt-kernel
     KF6::KCMUtils
     KF6::CoreAddons
     KF6::KCMUtilsQuick

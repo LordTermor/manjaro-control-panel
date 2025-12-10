@@ -8,43 +8,10 @@
 #include "UsbDeviceScanner.hpp"
 #include "UdevUtils.hpp"
 
+#include <cstring>
+#include <string_view>
+
 namespace mcp::mhwd {
-
-std::vector<Device> UsbDeviceScanner::scan()
-{
-    using namespace udev;
-    
-    std::vector<Device> devices;
-
-    UdevPtr udev_ctx(udev_new());
-    if (!udev_ctx) {
-        return devices;
-    }
-
-    UdevEnumeratePtr enumerate(udev_enumerate_new(udev_ctx.get()));
-    if (!enumerate) {
-        return devices;
-    }
-
-    udev_enumerate_add_match_subsystem(enumerate.get(), subsystem());
-    udev_enumerate_scan_devices(enumerate.get());
-
-    udev_list_entry* entry;
-    udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(enumerate.get()))
-    {
-        const char* syspath = udev_list_entry_get_name(entry);
-        UdevDevicePtr device(udev_device_new_from_syspath(udev_ctx.get(), syspath));
-        
-        if (!device || !is_valid(device.get())) {
-            continue;
-        }
-
-        DeviceInfo info = extract_info(device.get(), syspath);
-        devices.emplace_back(std::move(info), BusType::USB);
-    }
-
-    return devices;
-}
 
 DeviceInfo UsbDeviceScanner::extract_info(udev_device* device, const char* syspath)
 {
@@ -55,15 +22,32 @@ DeviceInfo UsbDeviceScanner::extract_info(udev_device* device, const char* syspa
     unsigned long dev_class = hex_to_ulong(udev_device_get_sysattr_value(device, "bDeviceClass"));
     unsigned long dev_subclass = hex_to_ulong(udev_device_get_sysattr_value(device, "bDeviceSubClass"));
 
+    // USB composite devices report class 0 at device level - extract from first interface
+    if (dev_class == 0) {
+        const char* interfaces = udev_device_get_property_value(device, "ID_USB_INTERFACES");
+        if (interfaces && interfaces[0] == ':' && strlen(interfaces) >= 7) {
+            // Format: ":CCSSPP:..." where CC=class, SS=subclass, PP=protocol
+            std::string_view iface_str(interfaces + 1, 6);
+            dev_class = hex_to_ulong(std::string(iface_str.substr(0, 2)).c_str());
+            dev_subclass = hex_to_ulong(std::string(iface_str.substr(2, 2)).c_str());
+        }
+    }
+
+    std::string device_name = safe_property(device, "ID_MODEL_FROM_DATABASE");
+    if (device_name.empty()) {
+        device_name = safe_property(device, "ID_MODEL");
+    }
+
     return DeviceInfo{
         .class_id = to_hex((dev_class << 8) | dev_subclass, 4),
         .vendor_id = to_hex(vendor, 4),
         .device_id = to_hex(product, 4),
         .class_name = safe_property(device, "ID_USB_CLASS_FROM_DATABASE"),
         .vendor_name = safe_property(device, "ID_VENDOR_FROM_DATABASE"),
-        .device_name = safe_property(device, "ID_MODEL_FROM_DATABASE"),
+        .device_name = std::move(device_name),
         .sysfs_bus_id = safe_string(udev_device_get_sysname(device)),
-        .sysfs_id = safe_string(syspath)
+        .sysfs_id = safe_string(syspath),
+        .driver = safe_string(udev_device_get_driver(device))
     };
 }
 

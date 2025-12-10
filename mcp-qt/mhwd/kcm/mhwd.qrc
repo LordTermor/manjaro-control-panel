@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/mhwd">
+        <file>../assets/amd-svgrepo-com.svg</file>
+        <file>../assets/nvidia-svgrepo-com.svg</file>
+        <file>../assets/intel-svgrepo-com.svg</file>
+    </qresource>
+</RCC>

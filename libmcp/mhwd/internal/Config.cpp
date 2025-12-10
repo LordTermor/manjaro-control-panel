@@ -6,12 +6,12 @@
  */
 
 #include "mhwd/Config.hpp"
+#include "mhwd/Types.hpp"
 #include "StringUtils.hpp"
 
 #include <algorithm>
 #include <fstream>
 #include <functional>
-#include <ranges>
 #include <unordered_map>
 
 /*
@@ -21,8 +21,6 @@
  */
 
 #define CFG_HANDLER [](Config& cfg, const std::string& val)
-
-namespace rg = std::ranges;
 
 namespace mcp::mhwd {
 
@@ -118,7 +116,7 @@ std::expected<Config, ParseError> Config::from_file(const std::filesystem::path&
 
     Config config;
     config.bus_type_ = type;
-    config.config_path_ = path;
+    config.config_file_ = path;
     config.base_path_ = path.parent_path();
 
     if (config.patterns_.empty()) {
@@ -128,19 +126,19 @@ std::expected<Config, ParseError> Config::from_file(const std::filesystem::path&
     using KeyHandler = std::function<void(Config&, const std::string&)>;
     static const std::unordered_map<std::string, KeyHandler> key_handlers = {
         {"name", CFG_HANDLER {
-            cfg.metadata_.name = to_lower(val);
+            cfg.name_ = to_lower(val);
         }},
         {"version", CFG_HANDLER {
-            cfg.metadata_.version = val;
+            cfg.version_ = val;
         }},
         {"info", CFG_HANDLER {
-            cfg.metadata_.info = val;
+            cfg.description_ = val;
         }},
         {"priority", CFG_HANDLER {
-            cfg.metadata_.priority = std::stoi(val);
+            cfg.priority_ = std::stoi(val);
         }},
         {"freedriver", CFG_HANDLER {
-            cfg.metadata_.free_driver = (to_lower(val) == "true");
+            cfg.is_free_driver_ = (to_lower(val) == "true");
         }},
         {"classids", CFG_HANDLER {
             if (!cfg.patterns_.back().class_ids.empty()) {
@@ -194,7 +192,7 @@ std::expected<Config, ParseError> Config::from_file(const std::filesystem::path&
         }
     }
 
-    if (config.metadata_.name.empty()) {
+    if (config.name_.empty()) {
         return std::unexpected(ParseError{"Config name is required", path});
     }
 

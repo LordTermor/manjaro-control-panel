@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file alias="icon.svg">../../data/assets/icon.svg</file>
+        <file alias="mascot.svg">../../data/assets/mascot.svg</file>
+    </qresource>
+</RCC>

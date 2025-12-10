@@ -6,16 +6,19 @@
  */
 
 /*
- * Builds validated transaction agent command lines for kernel operations.
+ * Kernel transaction builders - validates operations and produces agent commands.
  */
 
-#include "KernelTransactionBuilder.hpp"
+#include "Transaction.hpp"
+#include "KernelProvider.hpp"
 
 #include <pamac/database.hpp>
 
 namespace mcp::kernel {
 
-coro::task<bool> KernelTransactionBuilder::has_pending_updates_async()
+namespace {
+
+Task<bool> has_pending_updates()
 {
     auto db_result = pamac::Database::instance();
     if (!db_result) {
@@ -27,8 +30,27 @@ coro::task<bool> KernelTransactionBuilder::has_pending_updates_async()
     co_return updates.has_updates();
 }
 
-coro::task<std::expected<AgentCommand, TransactionError>>
-KernelTransactionBuilder::install(
+Task<bool> is_safe_to_remove(const std::string& package_name)
+{
+    KernelProvider provider;
+    auto kernel_result = co_await provider.get_kernel(package_name);
+    
+    if (!kernel_result) {
+        co_return false;
+    }
+    
+    co_return !kernel_result->is_in_use();
+}
+
+std::string get_headers_package(const std::string& package_name)
+{
+    return package_name + "-headers";
+}
+
+} // namespace
+
+Task<CommandResult>
+build_install(
     const std::string& package_name,
     bool with_headers,
     bool with_extra_modules)
@@ -40,41 +62,40 @@ KernelTransactionBuilder::install(
     
     auto& db = db_result.value().get();
     
-    if (co_await has_pending_updates_async()) {
+    if (co_await has_pending_updates()) {
         co_return std::unexpected(TransactionError::UpdatesPending);
     }
     
     KernelProvider provider;
-    auto kernel_result = co_await provider.get_kernel_async(package_name);
+    auto kernel_result = co_await provider.get_kernel(package_name);
     if (!kernel_result) {
         co_return std::unexpected(TransactionError::KernelNotFound);
     }
     
     const auto& kernel = kernel_result.value();
     
-    AgentCommand cmd;
-    cmd.operation = "install";
-    cmd.packages.push_back(package_name);
+    std::vector<std::string> packages;
+    packages.push_back(package_name);
     
     if (with_headers) {
         std::string headers_name = get_headers_package(package_name);
         auto headers_pkg = db.get_sync_pkg(headers_name);
         if (headers_pkg) {
-            cmd.packages.push_back(headers_name);
+            packages.push_back(headers_name);
         }
     }
     
     if (with_extra_modules) {
         for (const auto& module : kernel.extra_modules) {
-            cmd.packages.push_back(module);
+            packages.push_back(module);
         }
     }
     
-    co_return cmd;
+    co_return agent::make_install(std::move(packages));
 }
 
-coro::task<std::expected<AgentCommand, TransactionError>>
-KernelTransactionBuilder::remove(
+Task<CommandResult>
+build_remove(
     const std::string& package_name,
     bool with_headers,
     bool with_extra_modules,
@@ -88,7 +109,7 @@ KernelTransactionBuilder::remove(
     auto& db = db_result.value().get();
     
     KernelProvider provider;
-    auto kernel_result = co_await provider.get_kernel_async(package_name);
+    auto kernel_result = co_await provider.get_kernel(package_name);
     if (!kernel_result) {
         co_return std::unexpected(TransactionError::KernelNotFound);
     }
@@ -99,20 +120,18 @@ KernelTransactionBuilder::remove(
         co_return std::unexpected(TransactionError::KernelNotFound);
     }
     
-    if (!force && !co_await is_safe_to_remove_async(package_name)) {
+    if (!force && !co_await is_safe_to_remove(package_name)) {
         co_return std::unexpected(TransactionError::KernelInUse);
     }
     
-    AgentCommand cmd;
-    cmd.operation = "remove";
-    cmd.force = force;
-    cmd.packages.push_back(package_name);
+    std::vector<std::string> packages;
+    packages.push_back(package_name);
     
     if (with_headers) {
         std::string headers_name = get_headers_package(package_name);
         auto headers_pkg = db.get_installed_pkg(headers_name);
         if (headers_pkg) {
-            cmd.packages.push_back(headers_name);
+            packages.push_back(headers_name);
         }
     }
     
@@ -120,39 +139,18 @@ KernelTransactionBuilder::remove(
         for (const auto& module : kernel.extra_modules) {
             auto module_pkg = db.get_installed_pkg(module);
             if (module_pkg) {
-                cmd.packages.push_back(module);
+                packages.push_back(module);
             }
         }
     }
     
-    co_return cmd;
+    co_return agent::make_remove(std::move(packages), force);
 }
 
-coro::task<std::expected<AgentCommand, TransactionError>>
-KernelTransactionBuilder::upgrade(bool force_refresh)
+Task<CommandResult>
+build_upgrade(bool force_refresh)
 {
-    AgentCommand cmd;
-    cmd.operation = "upgrade";
-    cmd.refresh = force_refresh;
-    co_return cmd;
-}
-
-std::string KernelTransactionBuilder::get_headers_package(const std::string& package_name)
-{
-    return package_name + "-headers";
-}
-
-coro::task<bool> KernelTransactionBuilder::is_safe_to_remove_async(const std::string& package_name)
-{
-    KernelProvider provider;
-    auto kernel_result = co_await provider.get_kernel_async(package_name);
-    
-    if (!kernel_result) {
-        co_return false;
-    }
-    
-    const auto& kernel = kernel_result.value();
-    co_return !kernel.is_in_use();
+    co_return agent::make_upgrade(force_refresh);
 }
 
 } // namespace mcp::kernel

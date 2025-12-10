@@ -61,15 +61,25 @@ TransactionAgentLauncher::TransactionAgentLauncher(QObject* parent)
             this, &TransactionAgentLauncher::handleError);
 }
 
-void TransactionAgentLauncher::launchCommand(const mcp::kernel::AgentCommand& cmd)
+TransactionAgentLauncher::~TransactionAgentLauncher()
+{
+    // Detach process on destruction to prevent "destroyed while running" warning
+    if (m_process && m_process->state() != QProcess::NotRunning) {
+        m_process->disconnect();
+        m_process->setParent(nullptr);
+        // Process will continue independently
+    }
+}
+
+void TransactionAgentLauncher::launchCommand(const mcp::agent::Command& cmd)
 {
     QStringList args;
     args << QString::fromStdString(cmd.operation);
     
-    if (cmd.force && cmd.operation == QStringLiteral("remove")) {
+    if (cmd.force && cmd.operation == "remove") {
         args << QStringLiteral("--force");
     }
-    if (cmd.refresh && cmd.operation == QStringLiteral("upgrade")) {
+    if (cmd.refresh && cmd.operation == "upgrade") {
         args << QStringLiteral("--refresh");
     }
     

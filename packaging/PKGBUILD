@@ -80,9 +80,12 @@ package_libmcp-qt() {
         'fmt'
     )
 
-    # Install shared Qt libraries (common and kernel page)
+    # Install shared Qt libraries
     DESTDIR="$pkgdir" cmake --install build/mcp-qt/common
-    install -Dm755 build/bin/libmcp-qt-page-kernel.so "$pkgdir/usr/lib/libmcp-qt-page-kernel.so"
+    
+    # Install QML modules (kernel and mhwd)
+    DESTDIR="$pkgdir" cmake --install build/mcp-qt/kernel --component mcp-qt-kernel
+    DESTDIR="$pkgdir" cmake --install build/mcp-qt/mhwd --component mcp-qt-mhwd
 
     # Install transaction agent
     install -Dm755 build/bin/mcp-transaction-agent "$pkgdir/usr/bin/mcp-transaction-agent"
@@ -126,8 +129,10 @@ package_mcp-kcm() {
         'systemsettings'
     )
 
-    # Install KCM plugin
+    # Install KCM plugins (kernel, mhwd, and about)
     DESTDIR="$pkgdir" cmake --install build/mcp-qt/kernel/kcm
+    DESTDIR="$pkgdir" cmake --install build/mcp-qt/mhwd/kcm
+    DESTDIR="$pkgdir" cmake --install build/mcp-qt/about/kcm
 
     # Install category file
     install -Dm644 manjaro-control-panel/mcp-qt/data/categories/settings-system-administration-mcp.desktop \

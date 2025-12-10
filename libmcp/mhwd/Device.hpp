@@ -6,45 +6,72 @@
  */
 
 /*
- * Device - hardware device with pattern matching.
- * Thin wrapper around DeviceInfo that knows how to match against patterns.
+ * Device - hardware device with direct member access.
  */
 
 #pragma once
 
-#include "internal/Types.hpp"
+#include "Types.hpp"
+
+#include <string>
+#include <vector>
 
 namespace mcp::mhwd {
 
 /**
  * Hardware device detected on the system.
- * 
- * Represents a PCI or USB device with identity information
- * and ability to match against driver configuration patterns.
  */
 class Device {
-    DeviceInfo info_;
-    BusType bus_type_;
-
 public:
-    /**
-     * Construct device from detected hardware info.
-     */
-    Device(DeviceInfo info, BusType type)
-        : info_(std::move(info)), bus_type_(type)
-    {
-    }
+    Device(DeviceInfo info, BusType type);
 
-    [[nodiscard]] const DeviceInfo& info() const { return info_; }
+    // === Hardware identification (for driver matching) ===
+    
+    [[nodiscard]] const std::string& vendor_id() const { return vendor_id_; }
+    [[nodiscard]] const std::string& device_id() const { return device_id_; }
+    [[nodiscard]] const std::string& class_id() const { return class_id_; }
+    
+    // === Human-readable information ===
+    
+    [[nodiscard]] const std::string& vendor_name() const { return vendor_name_; }
+    [[nodiscard]] const std::string& device_name() const { return device_name_; }
+    [[nodiscard]] const std::string& class_name() const { return class_name_; }
+    
+    // === System information ===
+    
+    [[nodiscard]] const std::string& sysfs_path() const { return sysfs_path_; }
+    [[nodiscard]] const std::string& bus_id() const { return bus_id_; }
     [[nodiscard]] BusType bus_type() const { return bus_type_; }
+    [[nodiscard]] const std::string& driver() const { return driver_; }
+    
+    // === Device categorization ===
+    
+    [[nodiscard]] DeviceCategory category() const;
 
-    /**
-     * Check if this device matches a hardware pattern.
-     * Supports wildcards (*) and blacklists.
-     */
+private:
+    friend class Config;
+    friend class ConfigProvider;
     [[nodiscard]] bool matches(const HardwarePattern& pattern) const;
 
-    auto operator<=>(const Device& rhs) const = default;
+    // Hardware IDs
+    std::string vendor_id_;
+    std::string device_id_;
+    std::string class_id_;
+    
+    // Human-readable names
+    std::string vendor_name_;
+    std::string device_name_;
+    std::string class_name_;
+    
+    // System paths
+    std::string sysfs_path_;
+    std::string bus_id_;
+    BusType bus_type_;
+    std::string driver_;
 };
+
+using DeviceVector = std::vector<Device>;
+
+std::string_view to_string(DeviceCategory category);
 
 } // namespace mcp::mhwd

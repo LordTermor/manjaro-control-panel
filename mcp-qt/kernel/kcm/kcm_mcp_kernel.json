@@ -17,5 +17,6 @@
         "Website": "https://manjaro.org"
     },
     "X-KDE-Keywords": "kernel,linux,version,install,remove,update",
-    "X-KDE-System-Settings-Parent-Category": "system-administration-mcp"
+    "X-KDE-System-Settings-Parent-Category": "system-administration-mcp",
+    "X-KDE-Weight": 10
 }
