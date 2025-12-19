@@ -16,9 +16,6 @@ set_target_properties(mcp-transaction-agent PROPERTIES
     AUTOMOC ON
 )
 
-target_compile_definitions(mcp-transaction-agent PRIVATE QT_NO_KEYWORDS)
-
-# MCP version - propagated from root CMakeLists.txt
 target_compile_definitions(mcp-transaction-agent PRIVATE
     MCP_VERSION="${MCP_VERSION}"
 )

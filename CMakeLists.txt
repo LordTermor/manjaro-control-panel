@@ -11,19 +11,18 @@ project(mcp
 # Sets up build options, common dependencies, and includes subprojects.
 # ============================================================================
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(McpCompilerSettings)
 
-# Export compile commands for IDEs
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Build options
-option(MCP_BUILD_LIB "Build core libraries (libmcp)" OFF)
-option(MCP_BUILD_CLI "Build CLI tools" OFF)
-option(MCP_BUILD_QT "Build Qt/QML standalone app (mcp-qt)" OFF)
-option(MCP_BUILD_QT_CLASSIC "Build Qt Widgets classic app (mcp-qt-classic)" OFF)
-option(MCP_BUILD_KCM "Build KDE System Settings modules" OFF)
+option(MCP_BUILD_LIB "Build core libraries (libmcp)" ON)
+option(MCP_BUILD_CLI "Build CLI tools" ON)
+option(MCP_BUILD_QT "Build Qt/QML standalone app (mcp-qt)" ON)
+option(MCP_BUILD_QT_CLASSIC "Build Qt Widgets classic app (mcp-qt-classic)" ON)
+option(MCP_BUILD_KCM "Build KDE System Settings modules" ON)
 
 # Version variables for downstream targets
 set(MCP_VERSION ${PROJECT_VERSION})

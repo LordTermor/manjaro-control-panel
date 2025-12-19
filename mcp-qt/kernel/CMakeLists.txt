@@ -2,6 +2,8 @@
 # mcp-qt-page-kernel - Kernel management Qt/QML components
 # ============================================================================
 
+find_package(QCoro6 REQUIRED COMPONENTS Core)
+
 add_library(mcp-qt-page-kernel SHARED
     KernelData.h
     KernelListModel.cpp
@@ -15,10 +17,8 @@ target_link_libraries(mcp-qt-page-kernel
     PRIVATE
     libmcp-kernel
     mcp-qt-common
+    QCoro6::Core
 )
-target_compile_definitions(mcp-qt-page-kernel PUBLIC QT_NO_KEYWORDS)
-
-set_property(TARGET mcp-qt-page-kernel PROPERTY CXX_STANDARD 23)
 
 install(TARGETS mcp-qt-page-kernel)
 
@@ -35,14 +35,9 @@ if(MCP_BUILD_QT)
         Qt6::Qml
     )
 
-    target_compile_definitions(mcp-qt PUBLIC QT_NO_KEYWORDS)
-
-    # MCP version for standalone app
     target_compile_definitions(mcp-qt PRIVATE
         MCP_VERSION="${MCP_VERSION}"
     )
-
-    set_property(TARGET mcp-qt PROPERTY CXX_STANDARD 23)
 
     install(TARGETS mcp-qt)
 endif()
@@ -67,14 +62,9 @@ if(MCP_BUILD_QT_CLASSIC)
         Qt6::Widgets
     )
 
-    target_compile_definitions(mcp-qt-classic PUBLIC QT_NO_KEYWORDS)
-
-    # MCP version for classic app
     target_compile_definitions(mcp-qt-classic PRIVATE
         MCP_VERSION="${MCP_VERSION}"
     )
-
-    set_property(TARGET mcp-qt-classic PROPERTY CXX_STANDARD 23)
 
     install(TARGETS mcp-qt-classic)
 endif()

@@ -111,29 +111,29 @@ void KernelItemWidget::setKernelData(const KernelData& data)
 
 void KernelItemWidget::setKernelData(const QVariantMap& data)
 {
-    m_name = data.value("name").toString();
-    m_version = data.value("version").toString();
-    m_changelogUrl = data.value("changelogUrl").toString();
-    m_extraModules = data.value("extraModules").toStringList();
+    m_name = data.value(QStringLiteral("name")).toString();
+    m_version = data.value(QStringLiteral("version")).toString();
+    m_changelogUrl = data.value(QStringLiteral("changelogUrl")).toString();
+    m_extraModules = data.value(QStringLiteral("extraModules")).toStringList();
     
-    m_isInstalled = data.value("isInstalled").toBool();
-    m_isInUse = data.value("isInUse").toBool();
-    m_isLTS = data.value("isLTS").toBool();
-    m_isRealTime = data.value("isRealTime").toBool();
-    m_isEOL = data.value("isEOL").toBool();
-    m_isExperimental = data.value("isExperimental").toBool();
+    m_isInstalled = data.value(QStringLiteral("isInstalled")).toBool();
+    m_isInUse = data.value(QStringLiteral("isInUse")).toBool();
+    m_isLTS = data.value(QStringLiteral("isLTS")).toBool();
+    m_isRealTime = data.value(QStringLiteral("isRealTime")).toBool();
+    m_isEOL = data.value(QStringLiteral("isEOL")).toBool();
+    m_isExperimental = data.value(QStringLiteral("isExperimental")).toBool();
     
     updateDisplay();
 }
 
 void KernelItemWidget::updateDisplay()
 {
-    m_kernelNameLabel->setText("Linux " + m_version);
+    m_kernelNameLabel->setText(QStringLiteral("Linux ") + m_version);
     
     QString info = m_name;
     
     if (!m_changelogUrl.isEmpty()) {
-        info += QString(" • <a href=\"%1\" style=\"color: #2980b9;\">%2</a> ↗")
+        info += QString(QStringLiteral(" • <a href=\"%1\" style=\"color: #2980b9;\">%2</a> ↗"))
             .arg(m_changelogUrl, tr("Changelog"));
     }
     m_packageInfoLabel->setText(info);
@@ -160,11 +160,11 @@ void KernelItemWidget::updateDisplay()
         m_actionButton->setEnabled(false);
     } else if (m_isInstalled) {
         m_actionButton->setText(tr("Remove"));
-        m_actionButton->setIcon(QIcon::fromTheme("edit-delete"));
+        m_actionButton->setIcon(QIcon::fromTheme(QStringLiteral("edit-delete")));
         m_actionButton->setEnabled(true);
     } else {
         m_actionButton->setText(tr("Install"));
-        m_actionButton->setIcon(QIcon::fromTheme("download"));
+        m_actionButton->setIcon(QIcon::fromTheme(QStringLiteral("download")));
         m_actionButton->setEnabled(true);
     }
 }

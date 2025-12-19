@@ -4,10 +4,6 @@
 
 add_library(mcp-qt-common SHARED)
 
-set_target_properties(mcp-qt-common PROPERTIES
-    AUTOMOC ON
-)
-
 find_package(fmt REQUIRED)
 
 target_link_libraries(mcp-qt-common
@@ -25,8 +21,6 @@ target_include_directories(mcp-qt-common
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-
-target_compile_definitions(mcp-qt-common PUBLIC QT_NO_KEYWORDS)
 
 # MCP version - propagated from root CMakeLists.txt
 target_compile_definitions(mcp-qt-common PUBLIC

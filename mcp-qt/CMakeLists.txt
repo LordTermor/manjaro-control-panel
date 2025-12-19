@@ -2,26 +2,24 @@
 # mcp-qt - Qt/KDE GUI components for Manjaro Control Panel
 # ============================================================================
 
-# KCM plugins must be shared libraries, not static
-set(BUILD_SHARED_LIBS ON)
+include(McpQtSettings)
 
+set(BUILD_SHARED_LIBS ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(KF_MIN_VERSION "6.18.0")
 
 find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
-
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
+include(ECMQmlModule)
 
-# Ensure QML modules install to the prefix
 if(NOT KDE_INSTALL_QMLDIR)
     set(KDE_INSTALL_QMLDIR "${CMAKE_INSTALL_PREFIX}/lib/qt6/qml" CACHE PATH "Qt6 QML install directory")
 endif()
-include(ECMQmlModule)
 
 find_package(OpenMP REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Quick Qml QuickWidgets QuickControls2 DBus)

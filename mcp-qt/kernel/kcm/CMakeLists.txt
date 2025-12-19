@@ -20,5 +20,3 @@ target_link_libraries(kcm_mcp_kernel PRIVATE
     Qt6::DBus
     pamac::pamac-cpp
 )
-
-target_compile_definitions(kcm_mcp_kernel PUBLIC QT_NO_KEYWORDS)

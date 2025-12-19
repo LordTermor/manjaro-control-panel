@@ -57,7 +57,7 @@ void BadgeWidget::applyStyle()
     const auto& colors = colorSchemes.at(m_type);
     
     setStyleSheet(QString(
-        "QLabel {"
+        QStringLiteral("QLabel {"
         "  background-color: %1;"
         "  border: 1px solid %2;"
         "  border-radius: 4px;"
@@ -66,8 +66,10 @@ void BadgeWidget::applyStyle()
         "  font-weight: bold;"
         "  font-size: 9pt;"
         "  text-transform: uppercase;"
-        "}"
-    ).arg(colors.bg, colors.border, colors.text));
+        "}"))
+    .arg(QString::fromUtf8(colors.bg.data(), static_cast<qsizetype>(colors.bg.size())), 
+         QString::fromUtf8(colors.border.data(), static_cast<qsizetype>(colors.border.size())), 
+         QString::fromUtf8(colors.text.data(), static_cast<qsizetype>(colors.text.size()))));
     
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }

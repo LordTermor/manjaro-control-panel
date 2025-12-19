@@ -26,16 +26,16 @@ using namespace mcp::qt::kernel;
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    app.setApplicationName("MCP Kernel Manager");
-    app.setOrganizationName("Manjaro");
-    app.setApplicationVersion(MCP_VERSION);
+    app.setApplicationName(QStringLiteral("MCP Kernel Manager"));
+    app.setOrganizationName(QStringLiteral("Manjaro"));
+    app.setApplicationVersion(QString::fromLatin1(MCP_VERSION));
    
 
     // Initialize pamac database
     auto status = pamac::Database::initialize("/etc/pamac.conf");
     if (status != pamac::DatabaseStatus::Ok &&
         status != pamac::DatabaseStatus::AlreadyInitialized) {
-        qCritical() << "Failed to initialize package database";
+        qCritical() << QStringLiteral("Failed to initialize package database");
         return 1;
     }
 
@@ -52,12 +52,12 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    engine.rootContext()->setContextProperty("vm", &viewModel);
+    engine.rootContext()->setContextProperty(QStringLiteral("vm"), &viewModel);
 
-    engine.load(QUrl("qrc:/kernel-page/ui/standalone_main.qml"));
+    engine.load(QUrl(QStringLiteral("qrc:/kernel-page/ui/standalone_main.qml")));
 
     if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Failed to load QML";
+        qCritical() << QStringLiteral("Failed to load QML");
         return 1;
     }
 

@@ -25,17 +25,17 @@ using namespace mcp::qt::kernel;
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("MCP Kernel Manager");
+    app.setApplicationName(QStringLiteral("MCP Kernel Manager"));
     app.setApplicationDisplayName(QObject::tr("Manjaro Kernel Manager"));
-    app.setOrganizationName("Manjaro");
-    app.setOrganizationDomain("manjaro.org");
+    app.setOrganizationName(QStringLiteral("Manjaro"));
+    app.setOrganizationDomain(QStringLiteral("manjaro.org"));
     
 #ifdef MCP_VERSION
-    app.setApplicationVersion(MCP_VERSION);
+    app.setApplicationVersion(QString::fromLatin1(MCP_VERSION));
 #endif
 
-    app.setWindowIcon(QIcon::fromTheme("preferences-system-linux-kernel",
-                                       QIcon(":/images/resources/tux-manjaro.png")));
+    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("preferences-system-linux-kernel"),
+                                       QIcon(QStringLiteral(":/images/resources/tux-manjaro.png"))));
 
     KernelListModel model;
     KernelViewModel viewModel(model);
@@ -55,20 +55,20 @@ int main(int argc, char *argv[])
     
     QAction* refreshAction = fileMenu->addAction(QObject::tr("&Refresh"));
     refreshAction->setShortcut(QKeySequence::Refresh);
-    refreshAction->setIcon(QIcon::fromTheme("view-refresh"));
+    refreshAction->setIcon(QIcon::fromTheme(QStringLiteral("view-refresh")));
     // TODO: Connect to viewModel refresh method when available
     
     fileMenu->addSeparator();
     
     QAction* quitAction = fileMenu->addAction(QObject::tr("&Quit"));
     quitAction->setShortcut(QKeySequence::Quit);
-    quitAction->setIcon(QIcon::fromTheme("application-exit"));
+    quitAction->setIcon(QIcon::fromTheme(QStringLiteral("application-exit")));
     QObject::connect(quitAction, &QAction::triggered, &app, &QApplication::quit);
     
     QMenu* helpMenu = menuBar->addMenu(QObject::tr("&Help"));
     
     QAction* aboutAction = helpMenu->addAction(QObject::tr("&About"));
-    aboutAction->setIcon(QIcon::fromTheme("help-about"));
+    aboutAction->setIcon(QIcon::fromTheme(QStringLiteral("help-about")));
     QObject::connect(aboutAction, &QAction::triggered, [&mainWindow]() {
         QMessageBox::about(&mainWindow,
             QObject::tr("About Manjaro Kernel Manager"),
@@ -79,15 +79,15 @@ int main(int argc, char *argv[])
                         "with an easy-to-use interface.</p>"
                         "<p>© 2025 Manjaro Team</p>")
 #ifdef MCP_VERSION
-                .arg(MCP_VERSION)
+                .arg(QString::fromLatin1(MCP_VERSION))
 #else
-                .arg("dev")
+                .arg(QStringLiteral("dev"))
 #endif
         );
     });
     
     QAction* aboutQtAction = helpMenu->addAction(QObject::tr("About &Qt"));
-    aboutQtAction->setIcon(QIcon::fromTheme("help-about"));
+    aboutQtAction->setIcon(QIcon::fromTheme(QStringLiteral("help-about")));
     QObject::connect(aboutQtAction, &QAction::triggered, &app, &QApplication::aboutQt);
 
     mainWindow.statusBar()->showMessage(QObject::tr("Ready"));

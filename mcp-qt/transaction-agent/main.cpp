@@ -33,21 +33,21 @@ using namespace mcp::agent;
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
-    app.setApplicationName("MCP Transaction Agent");
-    app.setOrganizationName("Manjaro");
-    app.setApplicationVersion(MCP_VERSION);
+    app.setApplicationName(QStringLiteral("MCP Transaction Agent"));
+    app.setOrganizationName(QStringLiteral("Manjaro"));
+    app.setApplicationVersion(QString::fromLatin1(MCP_VERSION));
 
     // Parse command line
     QCommandLineParser parser;
-    parser.setApplicationDescription("MCP package transaction executor");
+    parser.setApplicationDescription(QStringLiteral("MCP package transaction executor"));
     parser.addHelpOption();
     parser.addVersionOption();
 
-    parser.addPositionalArgument("operation", "Operation: install, remove, or upgrade");
-    parser.addPositionalArgument("packages", "Package names (for install/remove)", "[packages...]");
+    parser.addPositionalArgument(QStringLiteral("operation"), QStringLiteral("Operation: install, remove, or upgrade"));
+    parser.addPositionalArgument(QStringLiteral("packages"), QStringLiteral("Package names (for install/remove)"), QStringLiteral("[packages...]"));
 
-    parser.addOption({{"f", "force"}, "Force operation (e.g., remove running kernel)"});
-    parser.addOption({{"r", "refresh"}, "Force refresh before upgrade"});
+    parser.addOption({{QStringLiteral("f"), QStringLiteral("force")}, QStringLiteral("Force operation (e.g., remove running kernel)")});
+    parser.addOption({{QStringLiteral("r"), QStringLiteral("refresh")}, QStringLiteral("Force refresh before upgrade")});
 
     parser.process(app);
 
@@ -60,16 +60,16 @@ int main(int argc, char** argv)
     QString operation = args.takeFirst();
     QStringList packages = args;
 
-    bool force = parser.isSet("force");
-    bool refresh = parser.isSet("refresh");
+    bool force = parser.isSet(QStringLiteral("force"));
+    bool refresh = parser.isSet(QStringLiteral("refresh"));
 
     // Validate operation
-    if (operation == "install" || operation == "remove") {
+    if (operation == QStringLiteral("install") || operation == QStringLiteral("remove")) {
         if (packages.isEmpty()) {
             qCritical() << "Error: No packages specified for" << operation;
             return 1;
         }
-    } else if (operation != "upgrade") {
+    } else if (operation != QStringLiteral("upgrade")) {
         qCritical() << "Error: Unknown operation:" << operation;
         parser.showHelp(1);
     }

@@ -26,8 +26,6 @@ target_include_directories(mcp-kernel-cli
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_compile_features(mcp-kernel-cli PRIVATE cxx_std_23)
-
 set_target_properties(mcp-kernel-cli PROPERTIES
     OUTPUT_NAME "mcp-kernel"
 )

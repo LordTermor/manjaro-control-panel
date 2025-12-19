@@ -189,16 +189,16 @@ void KernelPage::populateKernelList()
         }
         
         QVariantMap data;
-        data["name"] = model->data(idx, KernelListModel::Name);
-        data["version"] = model->data(idx, KernelListModel::Version);
-        data["changelogUrl"] = model->data(idx, KernelListModel::ChangelogUrl);
-        data["extraModules"] = model->data(idx, KernelListModel::ExtraModules);
-        data["isInstalled"] = model->data(idx, KernelListModel::IsInstalled);
-        data["isInUse"] = model->data(idx, KernelListModel::IsInUse);
-        data["isLTS"] = model->data(idx, KernelListModel::IsLTS);
-        data["isRealTime"] = model->data(idx, KernelListModel::IsRealTime);
-        data["isEOL"] = model->data(idx, KernelListModel::IsEOL);
-        data["isExperimental"] = model->data(idx, KernelListModel::IsExperimental);
+        data[QStringLiteral("name")] = model->data(idx, KernelListModel::Name);
+        data[QStringLiteral("version")] = model->data(idx, KernelListModel::Version);
+        data[QStringLiteral("changelogUrl")] = model->data(idx, KernelListModel::ChangelogUrl);
+        data[QStringLiteral("extraModules")] = model->data(idx, KernelListModel::ExtraModules);
+        data[QStringLiteral("isInstalled")] = model->data(idx, KernelListModel::IsInstalled);
+        data[QStringLiteral("isInUse")] = model->data(idx, KernelListModel::IsInUse);
+        data[QStringLiteral("isLTS")] = model->data(idx, KernelListModel::IsLTS);
+        data[QStringLiteral("isRealTime")] = model->data(idx, KernelListModel::IsRealTime);
+        data[QStringLiteral("isEOL")] = model->data(idx, KernelListModel::IsEOL);
+        data[QStringLiteral("isExperimental")] = model->data(idx, KernelListModel::IsExperimental);
         
         auto* item = new KernelItemWidget(KernelItemWidget::ListItem, this);
         item->setKernelData(data);
@@ -243,9 +243,9 @@ void KernelPage::confirmAndInstall(const KernelData& kernelData)
     QString message = tr("Install Linux kernel %1?").arg(kernelData.name);
     
     if (!kernelData.extraModules.isEmpty()) {
-        message += "\n\n" + tr("The following packages will also be installed:");
+        message += QStringLiteral("\n\n") + tr("The following packages will also be installed:");
         for (const QString& mod : kernelData.extraModules) {
-            message += "\n  • " + mod;
+            message += QStringLiteral("\n  • ") + mod;
         }
     }
     

@@ -13,8 +13,6 @@ add_library(libmcp-kernel SHARED
 
 set_target_properties(libmcp-kernel PROPERTIES
     OUTPUT_NAME mcp-kernel
-    CXX_STANDARD 23
-    CXX_STANDARD_REQUIRED ON
 )
 
 target_include_directories(libmcp-kernel 
