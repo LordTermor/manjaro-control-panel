@@ -7,13 +7,10 @@ import org.kde.kirigami as Kirigami
 Kirigami.AbstractCard {
     id: root
 
-    signal showChangelog
-    signal install(kernelData: var)
-    signal remove(kernelData: var)
-
+    // Configuration
     property bool actionsEnabled: true
 
-    // Kernel data properties
+    // Data - Kernel properties
     required property string name
     required property string version
     required property int majorVersion
@@ -26,8 +23,12 @@ Kirigami.AbstractCard {
     required property string changelogUrl
     required property var kernelData
 
-    // State
+    // Internal
     readonly property bool isRealtime: root.name.includes("-rt")
+
+    signal showChangelog()
+    signal install(kernelData: var)
+    signal remove(kernelData: var)
 
     highlighted: root.isRecommended
 

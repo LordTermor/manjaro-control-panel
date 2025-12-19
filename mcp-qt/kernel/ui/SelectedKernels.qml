@@ -6,13 +6,16 @@ import org.kde.kirigami as Kirigami
 Item {
     id: root
 
-    signal showChangelog(string changelogUrl)
-    signal install(kernelData: var)
-    signal remove(kernelData: var)
+    // Configuration
+    property bool actionsEnabled: true
 
+    // Data
     required property var inUseKernel
     required property var recommendedKernel
-    property bool actionsEnabled: true
+
+    signal showChangelog(changelogUrl: string)
+    signal install(kernelData: var)
+    signal remove(kernelData: var)
 
     Row {
         anchors.fill: parent

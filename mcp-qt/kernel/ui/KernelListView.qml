@@ -6,14 +6,14 @@ import org.kde.kirigami as Kirigami
 ListView {
     id: root
 
-    signal showChangelog(string changelogUrl)
-    signal install(kernelData: var)
-    signal remove(kernelData: var)
-    
+    // Configuration
     property bool actionsEnabled: true
 
+    signal showChangelog(changelogUrl: string)
+    signal install(kernelData: var)
+    signal remove(kernelData: var)
+
     boundsBehavior: ListView.StopAtBounds
-    
     spacing: Kirigami.Units.largeSpacing
     clip: true
 
