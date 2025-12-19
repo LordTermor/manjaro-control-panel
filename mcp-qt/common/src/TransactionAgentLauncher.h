@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <kernel/KernelTransactionBuilder.hpp>
+
 #include <QObject>
 #include <QProcess>
 #include <QString>
@@ -29,9 +31,13 @@ public:
     explicit TransactionAgentLauncher(QObject* parent = nullptr);
     ~TransactionAgentLauncher() override = default;
 
+    void launchCommand(const mcp::kernel::AgentCommand& cmd);
+    
+    // Legacy methods for backwards compatibility
     void installPackages(const QStringList& packages);
     void removePackages(const QStringList& packages, bool force = false);
     void upgradeSystem(bool forceRefresh = false);
+    
     bool isRunning() const;
 
 Q_SIGNALS:

@@ -19,10 +19,11 @@ TransactionAgentLauncher::TransactionAgentLauncher(QObject* parent)
     , m_process(new QProcess(this))
 {
     // Try multiple locations for agent executable
-    m_agentPath = QStandardPaths::findExecutable("mcp-transaction-agent");
+    m_agentPath = QStandardPaths::findExecutable(QStringLiteral("mcp-transaction-agent"));
     
     if (m_agentPath.isEmpty()) {
-        QString buildPath = QCoreApplication::applicationDirPath() + "/../mcp/transaction-agent/mcp-transaction-agent";
+        // Build directory: bin/mcp-qt -> bin/mcp-transaction-agent
+        QString buildPath = QCoreApplication::applicationDirPath() + QStringLiteral("/mcp-transaction-agent");
         if (QFile::exists(buildPath)) {
             m_agentPath = buildPath;
         }
@@ -37,6 +38,9 @@ TransactionAgentLauncher::TransactionAgentLauncher(QObject* parent)
     
     if (m_agentPath.isEmpty()) {
         qWarning() << "mcp-transaction-agent executable not found in any location";
+        qWarning() << "  - Tried system PATH";
+        qWarning() << "  - Tried build directory:" << QCoreApplication::applicationDirPath() + QStringLiteral("/mcp-transaction-agent");
+        qWarning() << "  - Tried installed path:" << QStringLiteral(MCP_TRANSACTION_AGENT_PATH);
     } else {
         qInfo() << "Found transaction agent at:" << m_agentPath;
     }
@@ -57,18 +61,37 @@ TransactionAgentLauncher::TransactionAgentLauncher(QObject* parent)
             this, &TransactionAgentLauncher::handleError);
 }
 
+void TransactionAgentLauncher::launchCommand(const mcp::kernel::AgentCommand& cmd)
+{
+    QStringList args;
+    args << QString::fromStdString(cmd.operation);
+    
+    if (cmd.force && cmd.operation == QStringLiteral("remove")) {
+        args << QStringLiteral("--force");
+    }
+    if (cmd.refresh && cmd.operation == QStringLiteral("upgrade")) {
+        args << QStringLiteral("--refresh");
+    }
+    
+    for (const auto& pkg : cmd.packages) {
+        args << QString::fromStdString(pkg);
+    }
+    
+    launchAgent(args);
+}
+
 void TransactionAgentLauncher::installPackages(const QStringList& packages)
 {
-    QStringList args = {"install"};
+    QStringList args = {QStringLiteral("install")};
     args.append(packages);
     launchAgent(args);
 }
 
 void TransactionAgentLauncher::removePackages(const QStringList& packages, bool force)
 {
-    QStringList args = {"remove"};
+    QStringList args = {QStringLiteral("remove")};
     if (force) {
-        args << "--force";
+        args << QStringLiteral("--force");
     }
     args.append(packages);
     launchAgent(args);
@@ -76,9 +99,9 @@ void TransactionAgentLauncher::removePackages(const QStringList& packages, bool 
 
 void TransactionAgentLauncher::upgradeSystem(bool forceRefresh)
 {
-    QStringList args = {"upgrade"};
+    QStringList args = {QStringLiteral("upgrade")};
     if (forceRefresh) {
-        args << "--refresh";
+        args << QStringLiteral("--refresh");
     }
     launchAgent(args);
 }
@@ -92,13 +115,13 @@ void TransactionAgentLauncher::launchAgent(const QStringList& arguments)
 {
     if (isRunning()) {
         qWarning() << "Transaction agent already running";
-        Q_EMIT error("Transaction already in progress");
+        Q_EMIT error(QStringLiteral("Transaction already in progress"));
         return;
     }
 
     if (m_agentPath.isEmpty()) {
         qCritical() << "mcp-transaction-agent executable not found";
-        Q_EMIT error("Transaction agent not found");
+        Q_EMIT error(QStringLiteral("Transaction agent not found"));
         return;
     }
 
@@ -139,20 +162,20 @@ void TransactionAgentLauncher::handleError(QProcess::ProcessError error)
     
     switch (error) {
     case QProcess::FailedToStart:
-        errorMsg = "Failed to start transaction agent";
+        errorMsg = QStringLiteral("Failed to start transaction agent");
         break;
     case QProcess::Crashed:
-        errorMsg = "Transaction agent crashed";
+        errorMsg = QStringLiteral("Transaction agent crashed");
         break;
     case QProcess::Timedout:
-        errorMsg = "Transaction agent timed out";
+        errorMsg = QStringLiteral("Transaction agent timed out");
         break;
     case QProcess::WriteError:
     case QProcess::ReadError:
-        errorMsg = "Communication error with transaction agent";
+        errorMsg = QStringLiteral("Communication error with transaction agent");
         break;
     default:
-        errorMsg = "Unknown error with transaction agent";
+        errorMsg = QStringLiteral("Unknown error with transaction agent");
         break;
     }
     

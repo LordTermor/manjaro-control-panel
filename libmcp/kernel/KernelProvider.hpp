@@ -62,7 +62,11 @@ public:
 
     [[nodiscard]] coro::task<KernelResult<std::vector<Kernel>>> get_kernels_async(ProgressCallback progress = nullptr) const;
 
+    [[nodiscard]] coro::task<KernelResult<Kernel>> get_kernel_async(const std::string& package_name) const;
+
     [[nodiscard]] KernelResult<Kernel> get_kernel(const std::string& package_name) const;
+
+    [[nodiscard]] coro::task<KernelResult<Kernel>> get_running_kernel_async() const;
 
     [[nodiscard]] KernelResult<Kernel> get_running_kernel() const;
 

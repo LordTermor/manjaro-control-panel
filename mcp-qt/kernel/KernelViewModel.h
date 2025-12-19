@@ -4,6 +4,11 @@
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  */
+/*
+ * KernelViewModel - business logic for kernel management UI.
+ * Uses QCoro for async operations and KernelTransactionBuilder for validation.
+ */
+
 #pragma once
 
 #include <QObject>
@@ -12,7 +17,7 @@
 #include "KernelData.h"
 
 #include <kernel/KernelProvider.hpp>
-#include <kernel/KernelManager.hpp>
+#include <kernel/KernelTransactionBuilder.hpp>
 
 #include <pamac/database.hpp>
 
@@ -63,6 +68,9 @@ Q_SIGNALS:
     void kernelsDataChanged();
     
     void fetchProgress(int current, int total, QString kernelName);
+    
+    void transactionError(QString errorTitle, QString errorMessage);
+    void updatesPendingError();
 
 private:
     void init();

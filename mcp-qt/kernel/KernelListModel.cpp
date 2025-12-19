@@ -11,14 +11,17 @@
 
 namespace mcp::qt::kernel {
 
-int KernelListModel::rowCount(const QModelIndex &parent) const
+int KernelListModel::rowCount([[maybe_unused]] const QModelIndex &parent) const
 {
-    return m_filteredList.size();
+    return static_cast<int>(m_filteredList.size());
 }
 
 QVariant KernelListModel::data(const QModelIndex &index, int role) const
 {
-    auto &el = m_filteredList[index.row()];
+    if (!index.isValid() || index.row() < 0 || static_cast<size_t>(index.row()) >= m_filteredList.size())
+        return QVariant{};
+    
+    const auto &el = m_filteredList[static_cast<size_t>(index.row())];
 
     switch (role) {
     case Name:
@@ -140,7 +143,10 @@ QHash<int, QByteArray> KernelListModel::roleNames() const
     auto enumeration = QMetaEnum::fromType<Role>();
     for (int i = 0; i < enumeration.keyCount(); i++) {
         result[i + ::Qt::UserRole + 1] = enumeration.key(i);
-        result[i + ::Qt::UserRole + 1][0] = std::tolower(result[i + ::Qt::UserRole + 1][0]);
+        auto &bytes = result[i + ::Qt::UserRole + 1];
+        if (!bytes.isEmpty()) {
+            bytes[0] = static_cast<char>(std::tolower(static_cast<unsigned char>(bytes[0])));
+        }
     }
     return result;
 }

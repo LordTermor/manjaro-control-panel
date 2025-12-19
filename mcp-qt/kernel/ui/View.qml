@@ -8,20 +8,82 @@ import org.manjaro.mcp.components as Components
 QQC2.Page {
     id: root
 
+    // Configuration
     padding: 0
 
+    // Dialogs
     Kirigami.PromptDialog {
         id: errorDialog
         
         title: qsTr("Error")
         standardButtons: Kirigami.Dialog.NoButton
+        
+        customFooterActions: [
+            Kirigami.Action {
+                text: qsTr("Close")
+                icon.name: "dialog-close"
+                onTriggered: errorDialog.close()
+            }
+        ]
+    }
+    
+    Kirigami.PromptDialog {
+        id: updatesPendingDialog
+        
+        title: qsTr("System Updates Required")
+        subtitle: qsTr("Please upgrade your system before installing new kernels")
+        standardButtons: Kirigami.Dialog.NoButton
+        
+        customFooterActions: [
+            Kirigami.Action {
+                text: qsTr("Close")
+                icon.name: "dialog-close"
+                onTriggered: updatesPendingDialog.close()
+            }
+        ]
+        
+        ColumnLayout {
+            spacing: Kirigami.Units.largeSpacing
+            
+            QQC2.Label {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                text: qsTr("Your system has pending updates that must be installed before you can install new kernels.\n\nPlease run system upgrade first using your package manager.")
+            }
+        }
+    }
+    
+    Connections {
+        target: vm
+        
+        function onTransactionError(errorTitle, errorMessage) {
+            errorDialog.title = errorTitle
+            errorDialog.subtitle = errorMessage
+            errorDialog.open()
+        }
+        
+        function onUpdatesPendingError() {
+            updatesPendingDialog.open()
+        }
     }
 
     Components.ConfirmationDialog {
         id: confirmationDialog
 
+        // State
         property bool uninstallation: false
         property var kernelData: null
+
+        /**
+         * Opens confirmation dialog
+         * @param {var} kernelData - KernelData object from C++
+         * @param {bool} uninstallation - True for removal, false for installation
+         */
+        function open(kernelData: var, uninstallation: bool) {
+            confirmationDialog.kernelData = kernelData
+            confirmationDialog.uninstallation = uninstallation
+            confirmationDialog.visible = true
+        }
 
         onAccepted: {
             if (!confirmationDialog.uninstallation) {
@@ -29,12 +91,6 @@ QQC2.Page {
             } else {
                 vm.removeKernel(confirmationDialog.kernelData)
             }
-        }
-
-        function open(kernelData: var, uninstallation: bool) {
-            confirmationDialog.kernelData = kernelData
-            confirmationDialog.uninstallation = uninstallation
-            confirmationDialog.visible = true
         }
 
         ColumnLayout {

@@ -4,7 +4,15 @@
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  */
+/*
+ * KernelViewModel - business logic for kernel management UI.
+ */
+
 #include "KernelViewModel.h"
+
+#include <qcoro/task.h>
+#include "pamac/transaction.hpp"
+
 #include <QQmlEngine>
 #include <QQuickItem>
 
@@ -13,14 +21,27 @@ namespace mcp::qt::kernel {
 void KernelViewModel::init()
 {
     connect(&m_transactionLauncher, &common::TransactionAgentLauncher::finished, this, 
-        [this](bool success, int exitCode) {
-            Q_UNUSED(exitCode);
+        [this](bool success, [[maybe_unused]] int exitCode) {
             
             if (success) {
-                auto db_result = pamac::Database::instance();
-                if (db_result) {
-                    db_result->get().refresh_tmp_files_dbs();
-                }
+                // Refresh package database after kernel transaction
+                []() -> QCoro::Task<void> {
+                    auto db_result = pamac::Database::instance();
+                    if (!db_result) {
+                        qWarning() << "Failed to get database instance for refresh";
+                        co_return;
+                    }
+                    
+                    auto refresh_txn = pamac::Transaction(db_result.value().get());
+
+                    bool refresh_success = co_await refresh_txn.refresh_dbs_async();
+                    if (!refresh_success) {
+                        qWarning() << "Failed to refresh databases after kernel transaction";
+                        co_return;
+                    }
+                    
+                    co_await refresh_txn.run_async();
+                }();
             }
             
             setCurrentTransactionKernelName(QString{});
@@ -37,26 +58,95 @@ KernelListModel *KernelViewModel::model() const
 
 void KernelViewModel::installKernel(const KernelData &kernelData)
 {
-    setCurrentTransactionKernelName(kernelData.name);
+    QString kernelName = kernelData.name;
+    setCurrentTransactionKernelName(kernelName);
     
-    QStringList packages;
-    packages << kernelData.name;
-    packages << (kernelData.name + "-headers");
-    packages << kernelData.extraModules;
-    
-    m_transactionLauncher.installPackages(packages);
+    [this, kernelName]() -> QCoro::Task<void> {
+        auto cmd_result = co_await mcp::kernel::KernelTransactionBuilder::install(
+            kernelName.toStdString(),
+            true,  // with_headers
+            true   // with_extra_modules
+        );
+        
+        if (!cmd_result) {
+            setCurrentTransactionKernelName(QString{});
+            
+            using mcp::kernel::TransactionError;
+            switch (cmd_result.error()) {
+                case TransactionError::UpdatesPending:
+                    Q_EMIT updatesPendingError();
+                    break;
+                    
+                case TransactionError::KernelNotFound:
+                    Q_EMIT transactionError(
+                        tr("Kernel Not Found"),
+                        tr("The kernel package '%1' could not be found in repositories.").arg(kernelName)
+                    );
+                    break;
+                    
+                default:
+                    Q_EMIT transactionError(
+                        tr("Installation Error"),
+                        tr("Failed to prepare kernel installation. Error code: %1\n\n"
+                           "This is unexpected. Please report this to developers.")
+                           .arg(static_cast<int>(cmd_result.error()))
+                    );
+                    break;
+            }
+            co_return;
+        }
+        
+        m_transactionLauncher.launchCommand(*cmd_result);
+    }();
 }
 
 void KernelViewModel::removeKernel(const KernelData &kernelData)
 {
-    setCurrentTransactionKernelName(kernelData.name);
+    QString kernelName = kernelData.name;
+    setCurrentTransactionKernelName(kernelName);
     
-    QStringList packages;
-    packages << kernelData.name;
-    packages << (kernelData.name + "-headers");
-    packages << kernelData.extraModules;
-    
-    m_transactionLauncher.removePackages(packages, false);
+    [this, kernelName]() -> QCoro::Task<void> {
+        auto cmd_result = co_await mcp::kernel::KernelTransactionBuilder::remove(
+            kernelName.toStdString(),
+            true,   // with_headers
+            true,   // with_extra_modules
+            false   // force
+        );
+        
+        if (!cmd_result) {
+            setCurrentTransactionKernelName(QString{});
+            
+            using mcp::kernel::TransactionError;
+            switch (cmd_result.error()) {
+                case TransactionError::KernelInUse:
+                    Q_EMIT transactionError(
+                        tr("Kernel In Use"),
+                        tr("Cannot remove kernel '%1' because it is currently running.\n\n"
+                           "Please boot into a different kernel first.").arg(kernelName)
+                    );
+                    break;
+                    
+                case TransactionError::KernelNotFound:
+                    Q_EMIT transactionError(
+                        tr("Kernel Not Found"),
+                        tr("The kernel package '%1' is not installed.").arg(kernelName)
+                    );
+                    break;
+                    
+                default:
+                    Q_EMIT transactionError(
+                        tr("Removal Error"),
+                        tr("Failed to prepare kernel removal. Error code: %1\n\n"
+                           "This is unexpected. Please report this to developers.")
+                           .arg(static_cast<int>(cmd_result.error()))
+                    );
+                    break;
+            }
+            co_return;
+        }
+        
+        m_transactionLauncher.launchCommand(*cmd_result);
+    }();
 }
 
 common::TransactionAgentLauncher *KernelViewModel::transactionLauncher()
@@ -89,65 +179,61 @@ KernelData KernelViewModel::recommendedKernelData() const
 
 void KernelViewModel::fetchAndUpdateKernels()
 {
-    auto progress_callback = [this](int current, int total, const std::string& kernel_name) {
-        Q_EMIT fetchProgress(current, total, QString::fromStdString(kernel_name));
-    };
-    
-    auto result = m_provider.get_kernels(progress_callback);
+    // Launch async kernel fetching with QCoro
+    [this]() -> QCoro::Task<void> {
+        auto result = co_await m_provider.get_kernels_async();
 
-    if (!result) {
-        qWarning() << "Failed to fetch kernels:" << static_cast<int>(result.error());
-        return;
-    }
+        if (!result) {
+            qWarning() << "Failed to fetch kernels:" << static_cast<int>(result.error());
+            co_return;
+        }
 
-    auto kernels_copy = *result;
-    
-    QMetaObject::invokeMethod(
-        this, [this, kernels_copy]() {
-            KernelData newInUseData;
-            KernelData newRecommendedData;
+        auto kernels_copy = *result;
+        
+        KernelData newInUseData;
+        KernelData newRecommendedData;
+        
+        for (const auto& kernel : kernels_copy) {
+            KernelData kernelData;
+            kernelData.name = QString::fromStdString(kernel.package_name);
+            kernelData.version = QString::fromStdString(kernel.version.to_string());
+            kernelData.isInUse = kernel.is_in_use();
+            kernelData.isRecommended = kernel.is_recommended();
+            kernelData.isInstalled = kernel.is_installed();
+            kernelData.majorVersion = kernel.version.major;
+            kernelData.minorVersion = kernel.version.minor;
+            kernelData.changelogUrl = QString::fromStdString(kernel.changelog_url);
+            kernelData.isLTS = kernel.is_lts();
             
-            for (const auto& kernel : kernels_copy) {
-                KernelData kernelData;
-                kernelData.name = QString::fromStdString(kernel.package_name);
-                kernelData.version = QString::fromStdString(kernel.version.to_string());
-                kernelData.isInUse = kernel.is_in_use();
-                kernelData.isRecommended = kernel.is_recommended();
-                kernelData.isInstalled = kernel.is_installed();
-                kernelData.majorVersion = kernel.version.major;
-                kernelData.minorVersion = kernel.version.minor;
-                kernelData.changelogUrl = QString::fromStdString(kernel.changelog_url);
-                kernelData.isLTS = kernel.is_lts();
-                
-                QStringList extraModsList;
-                for (const auto& mod : kernel.extra_modules) {
-                    extraModsList.append(QString::fromStdString(mod));
-                }
-                kernelData.extraModules = extraModsList;
-                
-                if (kernel.is_in_use()) {
-                    newInUseData = kernelData;
-                } else if (kernel.is_recommended()) {
-                    newRecommendedData = kernelData;
-                }
+            QStringList extraModsList;
+            for (const auto& mod : kernel.extra_modules) {
+                extraModsList.append(QString::fromStdString(mod));
             }
-
-            bool changed = false;
-            if (m_inUseKernelData != newInUseData) {
-                m_inUseKernelData = newInUseData;
-                changed = true;
-            }
-            if (m_recommendedKernelData != newRecommendedData) {
-                m_recommendedKernelData = newRecommendedData;
-                changed = true;
-            }
+            kernelData.extraModules = extraModsList;
             
-            if (changed) {
-                Q_EMIT kernelsDataChanged();
+            if (kernel.is_in_use()) {
+                newInUseData = kernelData;
+            } else if (kernel.is_recommended()) {
+                newRecommendedData = kernelData;
             }
+        }
 
-            m_model.setKernels(kernels_copy);
-        }, ::Qt::QueuedConnection);
+        bool changed = false;
+        if (m_inUseKernelData != newInUseData) {
+            m_inUseKernelData = newInUseData;
+            changed = true;
+        }
+        if (m_recommendedKernelData != newRecommendedData) {
+            m_recommendedKernelData = newRecommendedData;
+            changed = true;
+        }
+        
+        if (changed) {
+            Q_EMIT kernelsDataChanged();
+        }
+
+        m_model.setKernels(kernels_copy);
+    }();
 }
 
 } // namespace mcp::qt::kernel

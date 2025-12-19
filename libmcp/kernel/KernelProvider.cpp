@@ -12,7 +12,6 @@
 
 #include <algorithm>
 #include <array>
-#include <ranges>
 #include <regex>
 
 #ifdef __linux__
@@ -41,7 +40,8 @@ bool is_lts_version(int major, int minor)
     static const std::vector<std::pair<int, int>> lts_versions = {
         {4, 14}, {4, 19},
         {5, 4}, {5, 10}, {5, 15},
-        {6, 1}, {6, 6}, {6, 12}
+        {6, 1}, {6, 6}, {6, 12},
+        {6,18}
     };
     
     return std::ranges::find(lts_versions, std::make_pair(major, minor)) != lts_versions.end();
@@ -320,6 +320,30 @@ coro::task<KernelResult<std::vector<Kernel>>> KernelProvider::get_kernels_async(
     co_return kernels;
 }
 
+coro::task<KernelResult<Kernel>> KernelProvider::get_kernel_async(const std::string& package_name) const
+{
+    auto db_result = pamac::Database::instance();
+    if (!db_result) {
+        co_return std::unexpected(KernelError::DatabaseNotInitialized);
+    }
+    
+    auto& db = db_result.value().get();
+    auto pkg = db.get_pkg(package_name);
+
+    if (!pkg) {
+        co_return std::unexpected(KernelError::NotFound);
+    }
+
+    auto kernel = parse_kernel(pkg);
+    if (!kernel) {
+        co_return std::unexpected(KernelError::ParseError);
+    }
+    
+    populate_kernel_metadata(*kernel);
+
+    co_return *kernel;
+}
+
 KernelResult<Kernel> KernelProvider::get_kernel(const std::string& package_name) const
 {
     auto pkg = pamac::Database::instance().value().get().get_pkg(package_name);
@@ -334,6 +358,32 @@ KernelResult<Kernel> KernelProvider::get_kernel(const std::string& package_name)
     }
 
     return *kernel;
+}
+
+coro::task<KernelResult<Kernel>> KernelProvider::get_running_kernel_async() const
+{
+    auto running = get_running_kernel_version();
+    if (running.empty()) {
+        co_return std::unexpected(KernelError::NotFound);
+    }
+
+    // Extract kernel package name from running version
+    // Format: 6.6.10-1-MANJARO -> linux66
+    static const std::regex ver_regex(R"((\d+)\.(\d+)\.)");
+    std::smatch match;
+
+    if (!std::regex_search(running, match, ver_regex)) {
+        co_return std::unexpected(KernelError::ParseError);
+    }
+
+    std::string package_name = "linux" + match[1].str() + match[2].str();
+
+    auto result = co_await get_kernel_async(package_name);
+    if (result) {
+        result->flags.in_use = true;
+    }
+
+    co_return result;
 }
 
 KernelResult<Kernel> KernelProvider::get_running_kernel() const
