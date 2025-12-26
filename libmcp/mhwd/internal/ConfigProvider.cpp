@@ -5,16 +5,14 @@
  *
  */
 
-#include "mhwd/DriverManager.hpp"
+#include "mhwd/ConfigProvider.hpp"
 
 #include <algorithm>
 #include <filesystem>
 #include <ranges>
 
 /*
- * Driver configuration repository and transaction builder.
- * Manages config loading, device-to-driver matching, dependency resolution,
- * conflict detection, and libpamac transaction construction.
+ * Driver configuration repository for queries and device matching.
  */
 
 namespace rg = std::ranges;
@@ -24,28 +22,27 @@ namespace mcp::mhwd {
 
 namespace fs = std::filesystem;
 
-DriverManager::DriverManager(const DeviceProvider& device_provider, pamac::Database& database)
+ConfigProvider::ConfigProvider(const DeviceProvider& device_provider)
     : device_provider_(device_provider)
-    , transaction_(database)
 {
 }
 
 std::expected<std::vector<Config>, Error>
-DriverManager::get_available_configs(BusType type) const
+ConfigProvider::get_available_configs(BusType type) const
 {
     const auto config_dir = (type == BusType::USB) ? c_usb_config_dir : c_pci_config_dir;
     return load_configs_from_dir(config_dir, type);
 }
 
 std::expected<std::vector<Config>, Error>
-DriverManager::get_installed_configs(BusType type) const
+ConfigProvider::get_installed_configs(BusType type) const
 {
     const auto config_dir = (type == BusType::USB) ? c_usb_database_dir : c_pci_database_dir;
     return load_configs_from_dir(config_dir, type);
 }
 
 std::expected<Config, Error>
-DriverManager::find_config(const std::string& name, BusType type) const
+ConfigProvider::find_config(const std::string& name, BusType type) const
 {
     auto configs_result = get_available_configs(type);
     if (!configs_result) {
@@ -64,7 +61,7 @@ DriverManager::find_config(const std::string& name, BusType type) const
 }
 
 std::vector<Config>
-DriverManager::find_matching_configs(BusType type) const
+ConfigProvider::find_matching_configs(BusType type) const
 {
     const auto& devices = (type == BusType::USB)
         ? device_provider_.get_usb_devices()
@@ -83,14 +80,13 @@ DriverManager::find_matching_configs(BusType type) const
         })
         | rg::to<std::vector>();
 
-    // Sort by priority (highest first)
     rg::sort(matching, rg::greater{}, &Config::priority);
 
     return matching;
 }
 
 std::vector<Config>
-DriverManager::find_matching_configs_for_device(const Device& device) const
+ConfigProvider::find_matching_configs_for_device(const Device& device) const
 {
     auto configs_result = get_available_configs(device.bus_type());
     if (!configs_result) {
@@ -105,83 +101,13 @@ DriverManager::find_matching_configs_for_device(const Device& device) const
         })
         | rg::to<std::vector>();
 
-    // Sort by priority (highest first)
     rg::sort(matching, rg::greater{}, &Config::priority);
 
     return matching;
 }
 
-std::expected<void, Error>
-DriverManager::add_to_install(const std::string& config_name, BusType type)
-{
-    auto config_result = find_config(config_name, type);
-    if (!config_result) {
-        return std::unexpected(config_result.error());
-    }
-
-    const auto& config = *config_result;
-
-    auto installed = get_installed_configs(type);
-    if (installed) {
-        auto is_installed = rg::any_of(*installed, [&config](const auto& inst) {
-            return inst.name() == config.name();
-        });
-        
-        if (is_installed) {
-            return std::unexpected(Error::AlreadyInstalled);
-        }
-    }
-
-    auto dependencies = resolve_dependencies(config, type);
-
-    auto conflicts = find_conflicts(config, type);
-    if (!conflicts.empty()) {
-        return std::unexpected(Error::HasConflicts);
-    }
-
-    for (auto it = dependencies.rbegin(); it != dependencies.rend(); ++it) {
-        transaction_.add_pkg_to_install(it->name());
-    }
-
-    transaction_.add_pkg_to_install(config.name());
-
-    return {};
-}
-
-std::expected<void, Error>
-DriverManager::add_to_remove(const std::string& config_name, BusType type)
-{
-    auto installed = get_installed_configs(type);
-    if (!installed) {
-        return std::unexpected(installed.error());
-    }
-
-    auto it = rg::find_if(*installed, [&config_name](const auto& inst) {
-        return inst.name() == config_name;
-    });
-
-    if (it == installed->end()) {
-        return std::unexpected(Error::NotInstalled);
-    }
-
-    const Config& config = *it;
-
-    auto required_by = find_required_by(config, type);
-    if (!required_by.empty()) {
-        return std::unexpected(Error::RequiredByOthers);
-    }
-
-    transaction_.add_pkg_to_remove(config_name);
-
-    return {};
-}
-
-void DriverManager::reset_transaction()
-{
-}
-
 std::vector<Config>
-DriverManager::resolve_dependencies(const Config& config, BusType type) const
+ConfigProvider::resolve_dependencies(const Config& config, BusType type) const
 {
     std::vector<Config> result;
     auto installed = get_installed_configs(type);
@@ -221,7 +147,7 @@ DriverManager::resolve_dependencies(const Config& config, BusType type) const
 }
 
 std::vector<Config>
-DriverManager::find_conflicts(const Config& config, BusType type) const
+ConfigProvider::find_conflicts(const Config& config, BusType type) const
 {
     std::vector<Config> conflicts;
 
@@ -252,7 +178,7 @@ DriverManager::find_conflicts(const Config& config, BusType type) const
 }
 
 std::vector<Config>
-DriverManager::find_required_by(const Config& config, BusType type) const
+ConfigProvider::find_required_by(const Config& config, BusType type) const
 {
     std::vector<Config> required_by;
 
@@ -274,7 +200,7 @@ DriverManager::find_required_by(const Config& config, BusType type) const
 }
 
 std::expected<std::vector<Config>, Error>
-DriverManager::load_configs_from_dir(const fs::path& dir, BusType type) const
+ConfigProvider::load_configs_from_dir(const fs::path& dir, BusType type) const
 {
     if (!fs::exists(dir)) {
         return std::unexpected(Error::InvalidPath);
@@ -294,7 +220,7 @@ DriverManager::load_configs_from_dir(const fs::path& dir, BusType type) const
 }
 
 std::vector<fs::path>
-DriverManager::find_config_files(const fs::path& dir) const
+ConfigProvider::find_config_files(const fs::path& dir) const
 {
     std::vector<fs::path> files;
 

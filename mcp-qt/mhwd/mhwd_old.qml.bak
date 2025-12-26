@@ -1,0 +1,943 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as QQC2
+import QtQuick.Layouts 1.15
+import org.kde.kirigami 2.20 as Kirigami
+
+Kirigami.ApplicationWindow {
+    id: root
+
+    property string selectedDevice: ""
+    property bool showAllDevices: false
+    property var installingDrivers: ({})
+    property var expandedCategories: ({
+        "Display": true,
+        "Network": true,
+        "Audio": true,
+        "Storage": true,
+        "Input": true,
+        "Misc": false
+    })
+    
+    // Organized by category - populated from lspci and lsusb
+    property var deviceCategories: ({
+        "Display": {
+            "icon": "video-display",
+            "devices": [
+                {
+                    "id": "nvidia-gtx-1660ti",
+                    "name": "GeForce GTX 1660 Ti",
+                    "vendor": "NVIDIA Corporation",
+                    "icon": "video-display",
+                    "hasDrivers": true,
+                    "drivers": [{
+                        "id": "550xx",
+                        "name": "video-nvidia-550xx",
+                        "openSource": false,
+                        "installed": true,
+                        "recommended": true
+                    }, {
+                        "id": "535xx",
+                        "name": "video-nvidia-535xx",
+                        "openSource": false,
+                        "installed": false,
+                        "recommended": false
+                    }, {
+                        "id": "470xx",
+                        "name": "video-nvidia-470xx",
+                        "openSource": false,
+                        "installed": false,
+                        "recommended": false
+                    }, {
+                        "id": "nouveau",
+                        "name": "video-nouveau",
+                        "openSource": true,
+                        "installed": false,
+                        "recommended": false
+                    }]
+                },
+                {
+                    "id": "amd-granite-ridge",
+                    "name": "Granite Ridge [Radeon Graphics]",
+                    "vendor": "AMD/ATI",
+                    "icon": "video-display",
+                    "hasDrivers": false
+                }
+            ]
+        },
+        "Network": {
+            "icon": "network-wired",
+            "devices": [
+                {
+                    "id": "realtek-rtl8125",
+                    "name": "RTL8125 2.5GbE Controller",
+                    "vendor": "Realtek Semiconductor",
+                    "icon": "network-wired",
+                    "hasDrivers": true,
+                    "drivers": [{
+                        "id": "r8125",
+                        "name": "network-r8125-dkms",
+                        "openSource": true,
+                        "installed": false,
+                        "recommended": true
+                    }]
+                },
+                {
+                    "id": "intel-ax210",
+                    "name": "Wi-Fi 6E AX210/AX1675",
+                    "vendor": "Intel Corporation",
+                    "icon": "network-wireless",
+                    "hasDrivers": false
+                }
+            ]
+        },
+        "Audio": {
+            "icon": "audio-card",
+            "devices": [
+                {
+                    "id": "nvidia-audio",
+                    "name": "TU116 High Definition Audio Controller",
+                    "vendor": "NVIDIA Corporation",
+                    "icon": "audio-card",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-rembrandt-audio",
+                    "name": "Radeon High Definition Audio [Rembrandt/Strix]",
+                    "vendor": "AMD/ATI",
+                    "icon": "audio-card",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-hd-audio",
+                    "name": "Family 17h/19h/1ah HD Audio Controller",
+                    "vendor": "AMD",
+                    "icon": "audio-card",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "logitech-z407",
+                    "name": "Logi Z407",
+                    "vendor": "Logitech, Inc.",
+                    "icon": "audio-speakers",
+                    "hasDrivers": false
+                }
+            ]
+        },
+        "Storage": {
+            "icon": "drive-harddisk",
+            "devices": [
+                {
+                    "id": "samsung-nvme-1",
+                    "name": "NVMe SSD Controller SM981/PM981/PM983 (Slot 1)",
+                    "vendor": "Samsung Electronics",
+                    "icon": "drive-harddisk-solidstate",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "samsung-nvme-2",
+                    "name": "NVMe SSD Controller SM981/PM981/PM983 (Slot 2)",
+                    "vendor": "Samsung Electronics",
+                    "icon": "drive-harddisk-solidstate",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-sata",
+                    "name": "600 Series Chipset SATA Controller",
+                    "vendor": "AMD",
+                    "icon": "drive-harddisk",
+                    "hasDrivers": false
+                }
+            ]
+        },
+        "Input": {
+            "icon": "input-mouse",
+            "devices": [
+                {
+                    "id": "razer-viper-v2",
+                    "name": "Razer Viper V2 Pro",
+                    "vendor": "Razer USA, Ltd",
+                    "icon": "input-mouse",
+                    "hasDrivers": true,
+                    "drivers": [{
+                        "id": "openrazer",
+                        "name": "openrazer-meta",
+                        "openSource": true,
+                        "installed": false,
+                        "recommended": true
+                    }]
+                },
+                {
+                    "id": "razer-blackwidow",
+                    "name": "Razer BlackWidow V3",
+                    "vendor": "Razer USA, Ltd",
+                    "icon": "input-keyboard",
+                    "hasDrivers": true,
+                    "drivers": [{
+                        "id": "openrazer",
+                        "name": "openrazer-meta",
+                        "openSource": true,
+                        "installed": false,
+                        "recommended": true
+                    }]
+                }
+            ]
+        },
+        "Misc": {
+            "icon": "computer",
+            "devices": [
+                {
+                    "id": "nvidia-usbc-ucsi",
+                    "name": "TU116 USB Type-C UCSI Controller",
+                    "vendor": "NVIDIA Corporation",
+                    "icon": "usb",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "nvidia-usb3",
+                    "name": "TU116 USB 3.1 Host Controller",
+                    "vendor": "NVIDIA Corporation",
+                    "icon": "usb",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-usb3-1",
+                    "name": "Raphael/Granite Ridge USB 3.1 xHCI (Port 1)",
+                    "vendor": "AMD",
+                    "icon": "usb",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-usb3-2",
+                    "name": "Raphael/Granite Ridge USB 3.1 xHCI (Port 2)",
+                    "vendor": "AMD",
+                    "icon": "usb",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-usb2",
+                    "name": "Raphael/Granite Ridge USB 2.0 xHCI",
+                    "vendor": "AMD",
+                    "icon": "usb",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-600-usb3",
+                    "name": "600 Series Chipset USB 3.2 Controller",
+                    "vendor": "AMD",
+                    "icon": "usb",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-psp",
+                    "name": "Family 19h PSP/CCP",
+                    "vendor": "AMD",
+                    "icon": "security-high",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "intel-bt-ax210",
+                    "name": "AX210 Bluetooth",
+                    "vendor": "Intel Corp.",
+                    "icon": "network-bluetooth",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "csr-bt",
+                    "name": "Bluetooth Dongle (HCI mode)",
+                    "vendor": "Cambridge Silicon Radio",
+                    "icon": "network-bluetooth",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "ite-rgb",
+                    "name": "RGB LED Controller",
+                    "vendor": "Integrated Technology Express",
+                    "icon": "led",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-smbus",
+                    "name": "FCH SMBus Controller",
+                    "vendor": "AMD",
+                    "icon": "computer",
+                    "hasDrivers": false
+                },
+                {
+                    "id": "amd-lpc",
+                    "name": "FCH LPC Bridge",
+                    "vendor": "AMD",
+                    "icon": "computer",
+                    "hasDrivers": false
+                }
+            ]
+        }
+    })
+
+    function installDriver(deviceId, driverId) {
+        var key = deviceId + "-" + driverId;
+        var newInstallingDrivers = root.installingDrivers;
+        newInstallingDrivers[key] = true;
+        root.installingDrivers = newInstallingDrivers;
+        // Simulate installation
+        installTimer.deviceKey = key;
+        installTimer.start();
+    }
+    
+    function toggleCategory(categoryName) {
+        var newExpanded = root.expandedCategories;
+        newExpanded[categoryName] = !newExpanded[categoryName];
+        root.expandedCategories = newExpanded;
+    }
+
+    width: 1000
+    height: 700
+    title: "Hardware Configuration"
+
+    Timer {
+        id: installTimer
+        property string deviceKey: ""
+        interval: 2000
+        onTriggered: {
+            var newInstallingDrivers = root.installingDrivers;
+            newInstallingDrivers[installTimer.deviceKey] = false;
+            root.installingDrivers = newInstallingDrivers;
+        }
+    }
+
+    pageStack.initialPage: Kirigami.ScrollablePage {
+        id: mainPage
+        title: ""
+
+        ColumnLayout {
+            id: mainLayout
+            width: parent.width
+            spacing: Kirigami.Units.largeSpacing
+
+            // Device Categories
+            Repeater {
+                id: categoriesRepeater
+                model: Object.keys(root.deviceCategories)
+
+                delegate: ColumnLayout {
+                    id: categorySection
+                    
+                    required property string modelData
+                    property var categoryData: root.deviceCategories[categorySection.modelData] || {}
+                    property bool isExpanded: root.expandedCategories[categorySection.modelData] || false
+                    property int deviceCount: categorySection.categoryData.devices ? categorySection.categoryData.devices.length : 0
+                    property int driversAvailableCount: {
+                        var count = 0;
+                        var devices = categorySection.categoryData.devices || [];
+                        for (var i = 0; i < devices.length; i++) {
+                            if (devices[i].hasDrivers) count++;
+                        }
+                        return count;
+                    }
+                    
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+
+                    // Category Header
+                    Kirigami.AbstractCard {
+                        id: categoryHeader
+                        Layout.fillWidth: true
+                        
+                        onClicked: root.toggleCategory(categorySection.modelData)
+
+                        background: Rectangle {
+                            color: Kirigami.Theme.alternateBackgroundColor
+                            radius: 4
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+                        }
+
+                        contentItem: RowLayout {
+                            id: categoryHeaderContent
+                            anchors.margins: Kirigami.Units.largeSpacing
+                            spacing: Kirigami.Units.largeSpacing
+
+                            Kirigami.Icon {
+                                id: categoryExpandIcon
+                                source: categorySection.isExpanded ? "arrow-down" : "arrow-right"
+                                Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+
+                                Behavior on rotation {
+                                    NumberAnimation {
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                id: categoryIconBackground
+                                Layout.preferredWidth: Kirigami.Units.iconSizes.medium
+                                Layout.preferredHeight: Kirigami.Units.iconSizes.medium
+                                color: Kirigami.Theme.backgroundColor
+                                radius: 4
+
+                                Kirigami.Icon {
+                                    id: categoryIcon
+                                    anchors.centerIn: parent
+                                    source: categorySection.categoryData.icon || ""
+                                    width: Kirigami.Units.iconSizes.smallMedium
+                                    height: Kirigami.Units.iconSizes.smallMedium
+                                }
+                            }
+
+                            Kirigami.Heading {
+                                id: categoryTitle
+                                level: 3
+                                text: categorySection.modelData
+                                Layout.fillWidth: true
+                            }
+
+                            QQC2.Label {
+                                id: categoryDeviceCount
+                                text: categorySection.deviceCount + " device" + (categorySection.deviceCount !== 1 ? "s" : "")
+                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                color: Kirigami.Theme.disabledTextColor
+                            }
+
+                            QQC2.Label {
+                                id: categoryDriversAvailable
+                                text: categorySection.driversAvailableCount > 0 ? (categorySection.driversAvailableCount + " with drivers") : ""
+                                visible: categorySection.driversAvailableCount > 0
+                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                color: Kirigami.Theme.focusColor
+                                font.weight: Font.Medium
+                            }
+                        }
+                    }
+
+                    // Device Grid
+                    Flow {
+                        id: deviceGrid
+                        Layout.fillWidth: true
+                        Layout.leftMargin: Kirigami.Units.largeSpacing * 2
+                        
+                        visible: categorySection.isExpanded
+                        spacing: Kirigami.Units.largeSpacing
+
+                        Repeater {
+                            id: devicesRepeater
+                            model: categorySection.categoryData.devices || []
+
+                            delegate: Kirigami.AbstractCard {
+                                id: deviceCard
+                                
+                                required property var modelData
+                                property bool isSelected: root.selectedDevice === deviceCard.modelData.id
+                                property bool isHovered: false
+                                
+                                width: Math.max(280, Math.min(400, (deviceGrid.width - deviceGrid.spacing * 2) / 3))
+                                height: 120
+
+                                background: Rectangle {
+                                    color: {
+                                        if (deviceCard.isSelected) {
+                                            return Kirigami.Theme.activeBackgroundColor;
+                                        }
+                                        if (deviceCard.isHovered) {
+                                            return deviceCard.modelData.hasDrivers 
+                                                ? Qt.rgba(Kirigami.Theme.focusColor.r, Kirigami.Theme.focusColor.g, Kirigami.Theme.focusColor.b, 0.1)
+                                                : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.05);
+                                        }
+                                        return Kirigami.Theme.backgroundColor;
+                                    }
+                                    border.color: {
+                                        if (deviceCard.isSelected) {
+                                            return Kirigami.Theme.focusColor;
+                                        }
+                                        if (deviceCard.isHovered && deviceCard.modelData.hasDrivers) {
+                                            return Qt.rgba(Kirigami.Theme.focusColor.r, Kirigami.Theme.focusColor.g, Kirigami.Theme.focusColor.b, 0.5);
+                                        }
+                                        if (deviceCard.isHovered) {
+                                            return Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2);
+                                        }
+                                        return Kirigami.Theme.alternateBackgroundColor;
+                                    }
+                                    border.width: deviceCard.isSelected ? 2 : 1
+                                    radius: 4
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 200
+                                            easing.type: Easing.InOutQuad
+                                        }
+                                    }
+                                    
+                                    Behavior on border.color {
+                                        ColorAnimation {
+                                            duration: 200
+                                            easing.type: Easing.InOutQuad
+                                        }
+                                    }
+                                    
+                                    Behavior on border.width {
+                                        NumberAnimation {
+                                            duration: 200
+                                            easing.type: Easing.InOutQuad
+                                        }
+                                    }
+                                }
+                                
+                                MouseArea {
+                                    anchors.fill: parent
+                                    
+                                    cursorShape: deviceCard.modelData.hasDrivers ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                    hoverEnabled: true
+                                    
+                                    onClicked: {
+                                        if (deviceCard.modelData.hasDrivers) {
+                                            root.selectedDevice = root.selectedDevice === deviceCard.modelData.id ? "" : deviceCard.modelData.id;
+                                        }
+                                    }
+                                    onEntered: deviceCard.isHovered = true
+                                    onExited: deviceCard.isHovered = false
+                                }
+
+                                contentItem: RowLayout {
+                                    id: deviceCardContent
+                                    anchors.margins: Kirigami.Units.largeSpacing
+                                    spacing: Kirigami.Units.largeSpacing
+
+                                    Rectangle {
+                                        id: deviceIconBackground
+                                        Layout.preferredWidth: Kirigami.Units.iconSizes.large
+                                        Layout.preferredHeight: Kirigami.Units.iconSizes.large
+                                        Layout.alignment: Qt.AlignTop
+                                        
+                                        color: {
+                                            if (deviceCard.isSelected) {
+                                                return Kirigami.Theme.focusColor;
+                                            }
+                                            if (deviceCard.isHovered && deviceCard.modelData.hasDrivers) {
+                                                return Qt.rgba(Kirigami.Theme.focusColor.r, Kirigami.Theme.focusColor.g, Kirigami.Theme.focusColor.b, 0.3);
+                                            }
+                                            return Kirigami.Theme.alternateBackgroundColor;
+                                        }
+                                        radius: 4
+
+                                        Behavior on color {
+                                            ColorAnimation {
+                                                duration: 200
+                                                easing.type: Easing.InOutQuad
+                                            }
+                                        }
+
+                                        Kirigami.Icon {
+                                            id: deviceIcon
+                                            anchors.centerIn: parent
+                                            source: deviceCard.modelData.icon || ""
+                                            width: Kirigami.Units.iconSizes.medium
+                                            height: Kirigami.Units.iconSizes.medium
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        id: deviceInfoLayout
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        spacing: Kirigami.Units.smallSpacing
+
+                                        QQC2.Label {
+                                            id: deviceName
+                                            text: deviceCard.modelData.name || ""
+                                            font.weight: Font.Medium
+                                            wrapMode: Text.WordWrap
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 2
+                                            Layout.fillWidth: true
+                                        }
+
+                                        QQC2.Label {
+                                            id: deviceVendor
+                                            text: deviceCard.modelData.vendor || ""
+                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                            color: Kirigami.Theme.disabledTextColor
+                                            elide: Text.ElideRight
+                                            Layout.fillWidth: true
+                                        }
+
+                                        Item {
+                                            Layout.fillHeight: true
+                                        }
+
+                                        RowLayout {
+                                            id: deviceStatusLayout
+                                            spacing: Kirigami.Units.smallSpacing
+                                            visible: deviceCard.modelData.hasDrivers
+
+                                            property int driverCount: deviceCard.modelData.drivers ? deviceCard.modelData.drivers.length : 0
+                                            property bool hasInstalled: {
+                                                var drivers = deviceCard.modelData.drivers || [];
+                                                for (var i = 0; i < drivers.length; i++) {
+                                                    if (drivers[i].installed) return true;
+                                                }
+                                                return false;
+                                            }
+
+                                            Kirigami.Icon {
+                                                id: statusIcon
+                                                source: deviceStatusLayout.hasInstalled ? "checkmark" : "download"
+                                                width: Kirigami.Units.iconSizes.small
+                                                height: Kirigami.Units.iconSizes.small
+                                                color: deviceStatusLayout.hasInstalled ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.focusColor
+                                            }
+
+                                            QQC2.Label {
+                                                id: driverAvailableLabel
+                                                text: deviceStatusLayout.hasInstalled 
+                                                    ? "Driver installed"
+                                                    : (deviceStatusLayout.driverCount + " driver" + (deviceStatusLayout.driverCount !== 1 ? "s" : "") + " available")
+                                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                                font.weight: Font.Medium
+                                                color: deviceStatusLayout.hasInstalled ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.focusColor
+                                            }
+                                        }
+
+                                        QQC2.Label {
+                                            id: noDriversLabel
+                                            text: "No drivers available"
+                                            visible: !deviceCard.modelData.hasDrivers
+                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                            color: Kirigami.Theme.disabledTextColor
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Driver Details Panel (shown when device is selected)
+                    Kirigami.Card {
+                        id: driverDetailsCard
+                        
+                        property var selectedDeviceData: {
+                            var devices = categorySection.categoryData.devices || [];
+                            for (var i = 0; i < devices.length; i++) {
+                                if (devices[i].id === root.selectedDevice) {
+                                    return devices[i];
+                                }
+                            }
+                            return null;
+                        }
+                        
+                        Layout.fillWidth: true
+                        Layout.leftMargin: Kirigami.Units.largeSpacing * 2
+                        
+                        visible: categorySection.isExpanded && !!driverDetailsCard.selectedDeviceData && driverDetailsCard.selectedDeviceData.hasDrivers
+
+                        header: RowLayout {
+                            id: driverDetailsHeader
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.margins: Kirigami.Units.largeSpacing
+                            spacing: Kirigami.Units.largeSpacing
+
+                            Kirigami.Heading {
+                                id: driverDetailsTitle
+                                level: 4
+                                text: "Available Drivers"
+                                Layout.fillWidth: true
+                            }
+
+                            RowLayout {
+                                id: autoInstallLayout
+                                
+                                property var drivers: driverDetailsCard.selectedDeviceData?.drivers ?? []
+                                property bool hasProprietaryDrivers: {
+                                    for (var i = 0; i < autoInstallLayout.drivers.length; i++) {
+                                        if (!autoInstallLayout.drivers[i].openSource)
+                                            return true;
+                                    }
+                                    return false;
+                                }
+                                property bool hasOpenSourceDrivers: {
+                                    for (var i = 0; i < autoInstallLayout.drivers.length; i++) {
+                                        if (autoInstallLayout.drivers[i].openSource)
+                                            return true;
+                                    }
+                                    return false;
+                                }
+                                
+                                spacing: Kirigami.Units.smallSpacing
+
+                                QQC2.Label {
+                                    id: autoInstallLabel
+                                    text: "Auto install:"
+                                    color: Kirigami.Theme.disabledTextColor
+                                    visible: autoInstallLayout.hasProprietaryDrivers && autoInstallLayout.hasOpenSourceDrivers
+                                }
+
+                                QQC2.Button {
+                                    id: proprietaryButton
+                                    text: "Proprietary"
+                                    visible: autoInstallLayout.hasProprietaryDrivers && autoInstallLayout.hasOpenSourceDrivers
+                                    enabled: autoInstallLayout.hasProprietaryDrivers
+
+                                    background: Rectangle {
+                                        color: proprietaryButton.enabled ? "#e97517" : Kirigami.Theme.disabledTextColor
+                                        radius: 4
+                                    }
+
+                                    contentItem: QQC2.Label {
+                                        text: proprietaryButton.text
+                                        color: "white"
+                                        font.weight: Font.Medium
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+
+                                QQC2.Label {
+                                    id: separatorLabel
+                                    text: "|"
+                                    color: Kirigami.Theme.disabledTextColor
+                                    visible: autoInstallLayout.hasProprietaryDrivers && autoInstallLayout.hasOpenSourceDrivers
+                                }
+
+                                QQC2.Button {
+                                    id: openSourceButton
+                                    text: "Open Source"
+                                    visible: autoInstallLayout.hasProprietaryDrivers && autoInstallLayout.hasOpenSourceDrivers
+                                    enabled: autoInstallLayout.hasOpenSourceDrivers
+
+                                    background: Rectangle {
+                                        color: openSourceButton.enabled ? Kirigami.Theme.focusColor : Kirigami.Theme.disabledTextColor
+                                        radius: 4
+                                    }
+
+                                    contentItem: QQC2.Label {
+                                        text: openSourceButton.text
+                                        color: "white"
+                                        font.weight: Font.Medium
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
+                            }
+                        }
+
+                        contentItem: ColumnLayout {
+                            id: driverDetailsContent
+                            anchors.margins: Kirigami.Units.largeSpacing
+                            spacing: Kirigami.Units.largeSpacing
+
+                            Repeater {
+                                id: driversRepeater
+                                model: driverDetailsCard.selectedDeviceData?.drivers ?? []
+
+                                delegate: Rectangle {
+                                    id: driverItem
+                                    
+                                    required property var modelData
+                                    
+                                    Layout.fillWidth: true
+                                    height: driverContent.implicitHeight + Kirigami.Units.largeSpacing * 2
+                                    color: driverItem.modelData.recommended ? Kirigami.Theme.positiveBackgroundColor : Kirigami.Theme.backgroundColor
+                                    border.color: driverItem.modelData.recommended ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.alternateBackgroundColor
+                                    border.width: 1
+                                    radius: 4
+
+                                    RowLayout {
+                                        id: driverContent
+                                        anchors.fill: parent
+                                        anchors.margins: Kirigami.Units.largeSpacing
+                                        spacing: Kirigami.Units.largeSpacing
+
+                                        ColumnLayout {
+                                            id: driverInfoLayout
+                                            Layout.fillWidth: true
+                                            spacing: Kirigami.Units.smallSpacing
+
+                                            RowLayout {
+                                                id: driverNameLayout
+                                                spacing: Kirigami.Units.largeSpacing
+
+                                                QQC2.Label {
+                                                    id: driverNameLabel
+                                                    text: driverItem.modelData.name || ""
+                                                    font.weight: Font.Medium
+                                                }
+
+                                                QQC2.Label {
+                                                    id: recommendedLabel
+                                                    text: "Recommended"
+                                                    visible: driverItem.modelData.recommended || false
+                                                    color: Kirigami.Theme.positiveTextColor
+                                                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                                    font.weight: Font.Medium
+                                                    leftPadding: Kirigami.Units.smallSpacing
+                                                    rightPadding: Kirigami.Units.smallSpacing
+                                                    topPadding: Kirigami.Units.smallSpacing / 2
+                                                    bottomPadding: Kirigami.Units.smallSpacing / 2
+
+                                                    background: Rectangle {
+                                                        color: Kirigami.Theme.positiveBackgroundColor
+                                                        radius: 4
+                                                    }
+                                                }
+                                            }
+
+                                            RowLayout {
+                                                id: driverPropertiesLayout
+                                                spacing: Kirigami.Units.largeSpacing * 2
+
+                                                QQC2.Label {
+                                                    id: driverTypeLabel
+                                                    text: (driverItem.modelData.openSource || false) ? "Open Source" : "Proprietary"
+                                                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                                    font.weight: Font.Medium
+                                                    color: (driverItem.modelData.openSource || false) ? Kirigami.Theme.focusColor : "#e97517"
+                                                    leftPadding: Kirigami.Units.smallSpacing
+                                                    rightPadding: Kirigami.Units.smallSpacing
+                                                    topPadding: Kirigami.Units.smallSpacing / 2
+                                                    bottomPadding: Kirigami.Units.smallSpacing / 2
+
+                                                    background: Rectangle {
+                                                        color: (driverItem.modelData.openSource || false) ? Qt.rgba(Kirigami.Theme.focusColor.r, Kirigami.Theme.focusColor.g, Kirigami.Theme.focusColor.b, 0.2) : "#e9751720"
+                                                        radius: 4
+                                                    }
+                                                }
+
+                                                RowLayout {
+                                                    id: driverStatusLayout
+                                                    spacing: Kirigami.Units.smallSpacing
+
+                                                    Kirigami.Icon {
+                                                        id: driverStatusIcon
+                                                        source: (driverItem.modelData.installed || false) ? "checkmark" : "radio"
+                                                        width: Kirigami.Units.iconSizes.small
+                                                        height: Kirigami.Units.iconSizes.small
+                                                        color: (driverItem.modelData.installed || false) ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                                                    }
+
+                                                    QQC2.Label {
+                                                        id: driverStatusLabel
+                                                        text: (driverItem.modelData.installed || false) ? "Installed" : "Not Installed"
+                                                        font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                                        font.weight: Font.Medium
+                                                        color: (driverItem.modelData.installed || false) ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        QQC2.Button {
+                                            id: installButton
+                                            
+                                            property string driverKey: root.selectedDevice + "-" + (driverItem.modelData.id || "")
+                                            property bool isInstalling: root.installingDrivers[installButton.driverKey] || false
+
+                                            visible: !(driverItem.modelData.installed || false)
+                                            text: installButton.isInstalling ? "Installing..." : "Install"
+                                            enabled: !installButton.isInstalling
+                                            icon.name: "download"
+                                            
+                                            onClicked: root.installDriver(root.selectedDevice, driverItem.modelData.id || "")
+
+                                            background: Rectangle {
+                                                color: installButton.enabled ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
+                                                radius: 4
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Bottom Controls
+            RowLayout {
+                id: bottomControlsLayout
+                Layout.fillWidth: true
+                Layout.topMargin: Kirigami.Units.largeSpacing
+
+                QQC2.CheckBox {
+                    id: showAllDevicesCheckbox
+                    text: "Show all devices"
+                    checked: root.showAllDevices
+                    onCheckedChanged: root.showAllDevices = showAllDevicesCheckbox.checked
+                }
+
+                Item {
+                    id: bottomSpacer
+                    Layout.fillWidth: true
+                }
+
+                QQC2.Button {
+                    id: allSettingsButton
+                    text: "All Settings"
+                    flat: true
+                }
+
+                QQC2.Button {
+                    id: quitButton
+                    text: "Quit"
+                    highlighted: true
+                    onClicked: Qt.quit()
+                }
+            }
+        }
+    }
+
+    // Header
+    header: Item {
+        id: appHeader
+        height: headerLayout.implicitHeight + Kirigami.Units.largeSpacing * 2
+
+        RowLayout {
+            id: headerLayout
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.margins: Kirigami.Units.largeSpacing
+
+            Kirigami.Icon {
+                id: headerIcon
+                source: "configure"
+                Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                color: Kirigami.Theme.textColor
+            }
+
+            ColumnLayout {
+                id: headerTextLayout
+                Layout.fillWidth: true
+                spacing: 0
+
+                Kirigami.Heading {
+                    id: headerTitle
+                    level: 2
+                    text: "Hardware Configuration"
+                }
+
+                QQC2.Label {
+                    id: headerSubtitle
+                    text: "Manage your system drivers"
+                    color: Kirigami.Theme.disabledTextColor
+                    font.pointSize: Kirigami.Theme.smallFont.pointSize
+                }
+            }
+
+            QQC2.ToolButton {
+                id: closeButton
+                icon.name: "window-close"
+                onClicked: Qt.quit()
+            }
+        }
+    }
+}

@@ -12,10 +12,7 @@
 
 #pragma once
 
-#include "Types.hpp"
-#include "../Device.hpp"
-
-#include <vector>
+#include "DeviceScanner.hpp"
 
 struct udev_device;
 
@@ -24,15 +21,15 @@ namespace mcp::mhwd {
 /**
  * Scans USB bus for devices using udev.
  */
-class UsbDeviceScanner {
+class UsbDeviceScanner : public DeviceScanner<UsbDeviceScanner> {
 public:
-    /**
-     * Scan USB bus and return all valid devices.
-     */
-    static std::vector<Device> scan();
+    using DeviceScanner<UsbDeviceScanner>::scan;
 
 private:
+    friend class DeviceScanner<UsbDeviceScanner>;
+    
     static constexpr const char* subsystem() { return "usb"; }
+    static constexpr BusType bus_type() { return BusType::USB; }
     
     static DeviceInfo extract_info(udev_device* device, const char* syspath);
     static bool is_valid(udev_device* device);

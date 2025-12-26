@@ -11,7 +11,9 @@
 #include <fmt/color.h>
 #include <fmt/core.h>
 
+#include <algorithm>
 #include <iostream>
+#include <ranges>
 
 namespace mcp::cli::mhwd {
 
@@ -21,24 +23,19 @@ int RemoveCommand::execute()
 {
     out().set_color_enabled(color_enabled_);
     
-    auto result = manager_.add_to_remove(config_name_, type_);
-    
-    if (!result) {
-        switch (result.error()) {
-            case mcp::mhwd::Error::NotFound:
-                out().error(fmt::format("Configuration '{}' not found", config_name_));
-                break;
-            case mcp::mhwd::Error::NotInstalled:
-                out().warning(fmt::format("Configuration '{}' is not installed", config_name_));
-                break;
-            case mcp::mhwd::Error::RequiredByOthers:
-                out().error(fmt::format("Configuration '{}' is required by other configurations", config_name_));
-                break;
-            default:
-                out().error(fmt::format("Failed to remove '{}'", config_name_));
-                break;
-        }
+    auto installed = provider_.get_installed_configs(type_);
+    if (!installed) {
+        out().error("Failed to load installed configurations");
         return 1;
+    }
+    
+    auto it = std::ranges::find_if(*installed, [this](const auto& cfg) {
+        return cfg.name() == config_name_;
+    });
+    
+    if (it == installed->end()) {
+        out().warning(fmt::format("Configuration '{}' is not installed", config_name_));
+        return 0;
     }
 
     if (!no_confirm_) {
@@ -56,8 +53,9 @@ int RemoveCommand::execute()
     fmt::print("Removing '{}'...\n", 
                fmt::styled(config_name_, fmt::emphasis::bold));
     
-    out().success(fmt::format("Successfully prepared removal of '{}'", config_name_));
-    out().info("(Transaction execution not yet implemented)");
+    // TODO: Build and execute transaction with DriverTransactionBuilder
+    out().info("Transaction building not yet implemented");
+    out().success(fmt::format("Would remove '{}'", config_name_));
     
     return 0;
 }

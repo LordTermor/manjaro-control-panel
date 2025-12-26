@@ -8,7 +8,7 @@
 #pragma once
 
 #include <mhwd/DeviceProvider.hpp>
-#include <mhwd/DriverManager.hpp>
+#include <mhwd/ConfigProvider.hpp>
 
 namespace mcp::cli::mhwd {
 
@@ -18,7 +18,7 @@ namespace mcp::cli::mhwd {
 class ListCommand {
 public:
     ListCommand(
-        mcp::mhwd::DriverManager& manager,
+        mcp::mhwd::ConfigProvider& provider,
         const mcp::mhwd::DeviceProvider& devices,
         bool pci,
         bool usb,
@@ -27,7 +27,7 @@ public:
         bool verbose,
         bool color_enabled
     )
-        : manager_(manager)
+        : provider_(provider)
         , devices_(devices)
         , show_pci_(pci)
         , show_usb_(usb)
@@ -41,7 +41,7 @@ public:
     int execute();
 
 private:
-    mcp::mhwd::DriverManager& manager_;
+    mcp::mhwd::ConfigProvider& provider_;
     const mcp::mhwd::DeviceProvider& devices_;
     bool show_pci_;
     bool show_usb_;

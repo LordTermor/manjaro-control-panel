@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/mhwd">
+        <file>ui/standalone_main.qml</file>
+        <file>ui/View.qml</file>
+        <file>ui/CategorySection.qml</file>
+        <file>ui/DeviceCard.qml</file>
+        <file>ui/DriverDetailsPanel.qml</file>
+        <file>ui/DriverItem.qml</file>
+    </qresource>
+</RCC>

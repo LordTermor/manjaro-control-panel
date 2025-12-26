@@ -6,7 +6,7 @@
  */
 
 /*
- * Core types for driver management - value objects and enums.
+ * Core types for driver management - internal implementation types.
  * Simple data structures without behavior.
  */
 
@@ -16,25 +16,6 @@
 #include <vector>
 
 namespace mcp::mhwd {
-
-/**
- * Hardware bus type - PCI or USB.
- */
-enum class BusType { PCI, USB };
-
-/**
- * Error codes for driver operations.
- */
-enum class Error {
-    ParseError,
-    NotFound,
-    AlreadyInstalled,
-    NotInstalled,
-    HasConflicts,
-    RequiredByOthers,
-    InvalidPath,
-    DatabaseError
-};
 
 /**
  * Driver configuration metadata.
