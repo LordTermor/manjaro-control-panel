@@ -1,7 +1,9 @@
 /* === This file is part of MCP ===
  *
  *   SPDX-FileCopyrightText: 2025 Artem Grinev <agrinev@manjaro.org>
+ *   SPDX-FileCopyrightText: 2025 Daniil Ludwig <eightbyte81@gmail.com>
  *   SPDX-License-Identifier: GPL-3.0-or-later
+ *
  */
 
 #include "KernelItemWidget.h"
@@ -102,6 +104,7 @@ void KernelItemWidget::setKernelData(const KernelData& data)
     m_isInstalled = data.isInstalled;
     m_isInUse = data.isInUse;
     m_isLTS = data.isLTS;
+    m_isRecommended = data.isRecommended;
     m_isRealTime = false;  // Not in KernelData, handled separately by list model
     m_isEOL = false;       // Not in KernelData, handled separately by list model
     m_isExperimental = false; // Not in KernelData, handled separately by list model
@@ -119,6 +122,7 @@ void KernelItemWidget::setKernelData(const QVariantMap& data)
     m_isInstalled = data.value(QStringLiteral("isInstalled")).toBool();
     m_isInUse = data.value(QStringLiteral("isInUse")).toBool();
     m_isLTS = data.value(QStringLiteral("isLTS")).toBool();
+    m_isRecommended = data.value(QStringLiteral("isRecommended")).toBool();
     m_isRealTime = data.value(QStringLiteral("isRealTime")).toBool();
     m_isEOL = data.value(QStringLiteral("isEOL")).toBool();
     m_isExperimental = data.value(QStringLiteral("isExperimental")).toBool();
@@ -145,6 +149,9 @@ void KernelItemWidget::updateDisplay()
     }
     if (m_isLTS) {
         addInlineBadge(tr("LTS"), BadgeWidget::LTS);
+    }
+    if (m_isRecommended) {
+        addInlineBadge(tr("Recommended"), BadgeWidget::Recommended);
     }
     
     if (m_isEOL) {

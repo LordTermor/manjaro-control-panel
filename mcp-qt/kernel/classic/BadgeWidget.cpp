@@ -1,7 +1,9 @@
 /* === This file is part of MCP ===
  *
  *   SPDX-FileCopyrightText: 2025 Artem Grinev <agrinev@manjaro.org>
+ *   SPDX-FileCopyrightText: 2025 Daniil Ludwig <eightbyte81@gmail.com>
  *   SPDX-License-Identifier: GPL-3.0-or-later
+ *
  */
 
 #include "BadgeWidget.h"
@@ -29,6 +31,7 @@ namespace {
         {BadgeWidget::Running,      {"rgba(60, 118, 61, 0.15)", "rgba(60, 118, 61, 0.3)", "#3c763d"}},
         {BadgeWidget::EOL,          {"rgba(231, 76, 60, 0.15)", "rgba(231, 76, 60, 0.3)", "#e74c3c"}},
         {BadgeWidget::Experimental, {"rgba(241, 196, 15, 0.15)", "rgba(241, 196, 15, 0.3)", "#f39c12"}},
+        {BadgeWidget::Recommended,  {"rgba(142, 68, 173, 0.15)", "rgba(142, 68, 173, 0.3)", "#8e44ad"}},
     };
 }
 

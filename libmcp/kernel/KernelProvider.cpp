@@ -1,6 +1,7 @@
 /* === This file is part of MCP ===
  *
  *   SPDX-FileCopyrightText: 2022-2025 Artem Grinev <agrinev@manjaro.org>
+ *   SPDX-FileCopyrightText: 2025 Daniil Ludwig <eightbyte81@gmail.com>
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  */
@@ -225,8 +226,8 @@ KernelResult<std::vector<Kernel>> KernelProvider::get_kernels(ProgressCallback p
     for (auto& kernel : kernels) {
         kernel.flags.lts = is_lts_version(kernel.version.major, kernel.version.minor);
         
-        // Track latest LTS that's not in use and not real-time
-        if (kernel.flags.lts && !kernel.flags.in_use && !kernel.flags.real_time) {
+        // Track latest LTS that's not real-time
+        if (kernel.flags.lts && !kernel.flags.real_time) {
             if (!latest_lts || kernel.version > latest_lts->version) {
                 latest_lts = &kernel;
             }
@@ -282,8 +283,8 @@ coro::task<KernelResult<std::vector<Kernel>>> KernelProvider::get_kernels_async(
     for (auto& kernel : kernels) {
         kernel.flags.lts = is_lts_version(kernel.version.major, kernel.version.minor);
         
-        // Track latest LTS that's not in use and not real-time
-        if (kernel.flags.lts && !kernel.flags.in_use && !kernel.flags.real_time) {
+        // Track latest LTS that's not real-time
+        if (kernel.flags.lts && !kernel.flags.real_time) {
             if (!latest_lts || kernel.version > latest_lts->version) {
                 latest_lts = &kernel;
             }

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls as QQC2
+import QtQuick.Layouts
 
 import org.kde.kirigami as Kirigami
 
@@ -17,15 +18,15 @@ Item {
     signal install(kernelData: var)
     signal remove(kernelData: var)
 
-    Row {
+    RowLayout {
         anchors.fill: parent
         
         spacing: Kirigami.Units.largeSpacing
 
         // In-use kernel
         Item {
-            width: (parent.width - Kirigami.Units.largeSpacing) / 2
-            height: parent.height
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             visible: root.inUseKernel.valid
 
             KernelDelegate {
@@ -79,9 +80,9 @@ Item {
 
         // Recommended kernel
         Item {
-            width: (parent.width - Kirigami.Units.largeSpacing) / 2
-            height: parent.height
-            visible: root.recommendedKernel.valid
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: root.recommendedKernel.valid && !(root.inUseKernel.isInUse && root.inUseKernel.isRecommended)
 
             KernelDelegate {
                 id: recommendedCard

@@ -118,6 +118,33 @@ Kirigami.AbstractCard {
                         color: "#e97517"
                     }
                 }
+
+                Rectangle {
+                    width: recommendedLabel.width + 16
+                    height: recommendedLabel.height + 4
+                    
+                    visible: root.isRecommended
+                    color: "transparent"
+                    border.color: Qt.rgba(0.557, 0.267, 0.678, 0.3)
+                    border.width: 1
+                    radius: 4
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: Qt.rgba(0.557, 0.267, 0.678, 0.15)
+                        radius: parent.radius
+                    }
+
+                    QQC2.Label {
+                        id: recommendedLabel
+                        anchors.centerIn: parent
+                        text: qsTr("Recommended")
+                        font.pointSize: 8
+                        font.weight: Font.Bold
+                        font.capitalization: Font.AllUppercase
+                        color: "#8e44ad"
+                    }
+                }
             }
 
             Flow {

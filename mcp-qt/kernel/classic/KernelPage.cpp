@@ -1,7 +1,9 @@
 /* === This file is part of MCP ===
  *
  *   SPDX-FileCopyrightText: 2025 Artem Grinev <agrinev@manjaro.org>
+ *   SPDX-FileCopyrightText: 2025 Daniil Ludwig <eightbyte81@gmail.com>
  *   SPDX-License-Identifier: GPL-3.0-or-later
+ *
  */
 
 #include "KernelPage.h"
@@ -38,8 +40,8 @@ void KernelPage::setupUi()
     mainLayout->setContentsMargins(12, 12, 12, 12);
     mainLayout->setSpacing(12);
     
-    auto* cardsLayout = new QHBoxLayout();
-    cardsLayout->setSpacing(12);
+    m_cardsLayout = new QHBoxLayout();
+    m_cardsLayout->setSpacing(12);
     
     auto* inUseLayout = new QVBoxLayout();
     inUseLayout->setSpacing(4);
@@ -47,7 +49,7 @@ void KernelPage::setupUi()
     inUseLayout->addWidget(m_inUseLabel);
     m_inUseCard = new KernelItemWidget(KernelItemWidget::Card, this);
     inUseLayout->addWidget(m_inUseCard);
-    cardsLayout->addLayout(inUseLayout, 1);
+    m_cardsLayout->addLayout(inUseLayout, 1);
     
     auto* recommendedLayout = new QVBoxLayout();
     recommendedLayout->setSpacing(4);
@@ -55,9 +57,9 @@ void KernelPage::setupUi()
     recommendedLayout->addWidget(m_recommendedLabel);
     m_recommendedCard = new KernelItemWidget(KernelItemWidget::Card, this);
     recommendedLayout->addWidget(m_recommendedCard);
-    cardsLayout->addLayout(recommendedLayout, 1);
+    m_cardsLayout->addLayout(recommendedLayout, 1);
     
-    mainLayout->addLayout(cardsLayout);
+    mainLayout->addLayout(m_cardsLayout);
     
     auto* separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
@@ -117,7 +119,7 @@ void KernelPage::onKernelsDataChanged()
     }
     
     KernelData recommendedData = m_viewModel->recommendedKernelData();
-    if (recommendedData.isValid()) {
+    if (recommendedData.isValid() && !(inUseData.isInUse && inUseData.isRecommended)) {
         m_recommendedCard->setKernelData(recommendedData);
         m_recommendedCard->setVisible(true);
         m_recommendedLabel->setVisible(true);
@@ -125,9 +127,15 @@ void KernelPage::onKernelsDataChanged()
         m_recommendedLabel->setText(recommendedData.isInstalled 
             ? tr("Recommended (choose in boot menu)") 
             : tr("Recommended"));
+        
+        m_cardsLayout->setStretch(0, 1);
+        m_cardsLayout->setStretch(1, 1);
     } else {
         m_recommendedCard->setVisible(false);
         m_recommendedLabel->setVisible(false);
+
+        m_cardsLayout->setStretch(0, 1);
+        m_cardsLayout->setStretch(1, 0);
     }
     
     populateKernelList();
@@ -196,6 +204,7 @@ void KernelPage::populateKernelList()
         data[QStringLiteral("isInstalled")] = model->data(idx, KernelListModel::IsInstalled);
         data[QStringLiteral("isInUse")] = model->data(idx, KernelListModel::IsInUse);
         data[QStringLiteral("isLTS")] = model->data(idx, KernelListModel::IsLTS);
+        data[QStringLiteral("isRecommended")] = model->data(idx, KernelListModel::IsRecommended);
         data[QStringLiteral("isRealTime")] = model->data(idx, KernelListModel::IsRealTime);
         data[QStringLiteral("isEOL")] = model->data(idx, KernelListModel::IsEOL);
         data[QStringLiteral("isExperimental")] = model->data(idx, KernelListModel::IsExperimental);
