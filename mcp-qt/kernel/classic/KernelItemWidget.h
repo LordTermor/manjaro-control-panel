@@ -1,7 +1,9 @@
 /* === This file is part of MCP ===
  *
  *   SPDX-FileCopyrightText: 2025 Artem Grinev <agrinev@manjaro.org>
+ *   SPDX-FileCopyrightText: 2025 Daniil Ludwig <eightbyte81@gmail.com>
  *   SPDX-License-Identifier: GPL-3.0-or-later
+ *
  */
 #pragma once
 
@@ -72,6 +74,7 @@ private:
     bool m_isInstalled = false;
     bool m_isInUse = false;
     bool m_isLTS = false;
+    bool m_isRecommended = false;
     bool m_isRealTime = false;
     bool m_isEOL = false;
     bool m_isExperimental = false;
