@@ -25,4 +25,4 @@ target_link_libraries(libmcp-kernel
         pamac::pamac-cpp
 )
 
-install(TARGETS libmcp-kernel)
+install(TARGETS libmcp-kernel COMPONENT Runtime)

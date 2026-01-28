@@ -78,6 +78,7 @@ set_property(TARGET mcp-qt-mhwd PROPERTY CXX_STANDARD 23)
 
 install(TARGETS mcp-qt-mhwd
     RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
+    COMPONENT Standalone
 )
 
 # ============================================================================

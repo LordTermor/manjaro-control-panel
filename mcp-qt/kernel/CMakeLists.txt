@@ -20,7 +20,7 @@ target_link_libraries(mcp-qt-kernel
     QCoro6::Core
 )
 
-install(TARGETS mcp-qt-kernel)
+install(TARGETS mcp-qt-kernel COMPONENT Runtime)
 
 # Standalone QML executable
 if(MCP_BUILD_QT)
@@ -39,7 +39,7 @@ if(MCP_BUILD_QT)
         MCP_VERSION="${MCP_VERSION}"
     )
 
-    install(TARGETS mcp-qt-kernels)
+    install(TARGETS mcp-qt-kernels COMPONENT Standalone)
 endif()
 
 # Classic Qt Widgets standalone executable
@@ -66,7 +66,7 @@ if(MCP_BUILD_QT_CLASSIC)
         MCP_VERSION="${MCP_VERSION}"
     )
 
-    install(TARGETS mcp-qt-classic)
+    install(TARGETS mcp-qt-classic COMPONENT Standalone)
 endif()
 
 # KCM module (in subfolder)

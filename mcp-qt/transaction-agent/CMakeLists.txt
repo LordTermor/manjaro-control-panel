@@ -36,4 +36,5 @@ target_include_directories(mcp-transaction-agent
 # Install to bin directory
 install(TARGETS mcp-transaction-agent
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    COMPONENT Runtime
 )

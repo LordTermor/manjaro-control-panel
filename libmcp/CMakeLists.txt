@@ -51,7 +51,7 @@ target_include_directories(libmcp
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-install(TARGETS libmcp)
+install(TARGETS libmcp COMPONENT Runtime)
 
 add_subdirectory(kernel)
 add_subdirectory(mhwd)

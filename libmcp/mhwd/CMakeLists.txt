@@ -37,4 +37,4 @@ target_link_libraries(libmcp-mhwd
         PkgConfig::UDEV
 )
 
-install(TARGETS libmcp-mhwd)
+install(TARGETS libmcp-mhwd COMPONENT Runtime)

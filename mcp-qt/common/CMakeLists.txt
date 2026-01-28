@@ -39,4 +39,4 @@ add_subdirectory(qml)
 
 add_subdirectory(src)
 
-install(TARGETS mcp-qt-common)
+install(TARGETS mcp-qt-common COMPONENT Runtime)
