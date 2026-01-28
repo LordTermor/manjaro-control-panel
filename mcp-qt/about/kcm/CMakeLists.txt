@@ -7,7 +7,7 @@ message(STATUS "Configuring About KCM...")
 # KI18N Translation Domain for this library
 add_definitions(-DTRANSLATION_DOMAIN="kcm_mcp_about")
 
-kcmutils_add_qml_kcm(kcm_mcp_about SOURCES AboutKCModule.cpp AboutKCModule.h about.qrc)
+kcmutils_add_qml_kcm(kcm_mcp_about SOURCES AboutKCModule.cpp AboutKCModule.h ../../data/assets.qrc)
 
 target_link_libraries(kcm_mcp_about PRIVATE
     mcp-qt-common

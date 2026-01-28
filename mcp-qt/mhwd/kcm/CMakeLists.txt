@@ -7,7 +7,7 @@ message(STATUS "Configuring MHWD KCM...")
 # KI18N Translation Domain for this library
 add_definitions(-DTRANSLATION_DOMAIN="kcm_mcp_mhwd")
 
-kcmutils_add_qml_kcm(kcm_mcp_mhwd SOURCES MhwdKCModule.cpp MhwdKCModule.h mhwd.qrc)
+kcmutils_add_qml_kcm(kcm_mcp_mhwd SOURCES MhwdKCModule.cpp MhwdKCModule.h)
 
 target_link_libraries(kcm_mcp_mhwd PRIVATE
     libmcp-mhwd

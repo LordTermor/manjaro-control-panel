@@ -4,13 +4,13 @@
 
 find_package(QCoro6 REQUIRED COMPONENTS Core)
 
+# C++ ViewModels library (no QML files, used by QML module)
 add_library(mcp-qt-kernel SHARED
     KernelData.h
     KernelListModel.cpp
     KernelListModel.h
     KernelViewModel.cpp
     KernelViewModel.h
-    kernel.qrc
 )
 
 target_link_libraries(mcp-qt-kernel
@@ -22,9 +22,26 @@ target_link_libraries(mcp-qt-kernel
 
 install(TARGETS mcp-qt-kernel COMPONENT Runtime)
 
+# QML Module
+mcp_add_qml_module(
+    MODULE_NAME mcp-qt-kernel-qmlmodule
+    URI "org.manjaro.mcp.kernel"
+    DOMAIN kernel
+    QML_FILES
+        ui/View.qml
+        ui/KernelListView.qml
+        ui/KernelDelegate.qml
+        ui/SelectedKernels.qml
+        ui/ChangelogSheet.qml
+        ui/standalone_main.qml
+    CPP_BACKING_LIBS
+        mcp-qt-kernel
+        mcp-qt-common
+)
+
 # Standalone QML executable
 if(MCP_BUILD_QT)
-    add_executable(mcp-qt-kernels standalone_main.cpp)
+    add_executable(mcp-qt-kernels standalone_main.cpp standalone.qrc)
 
     target_link_libraries(mcp-qt-kernels
         PRIVATE

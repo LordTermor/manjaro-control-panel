@@ -33,24 +33,28 @@ target_link_libraries(mcp-qt-mhwd-objects
 )
 
 # QML Module
-ecm_add_qml_module(mcp-qt-mhwd-qmlmodule
+mcp_add_qml_module(
+    MODULE_NAME mcp-qt-mhwd-qmlmodule
     URI "org.manjaro.mcp.mhwd"
-    VERSION 1.0
-    GENERATE_PLUGIN_SOURCE
-    OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/org/manjaro/mcp/mhwd
-)
-
-target_link_libraries(mcp-qt-mhwd-qmlmodule
-    PUBLIC
+    DOMAIN mhwd
+    QML_FILES
+        ui/UIManager.qml
+        ui/ErrorDialog.qml
+        ui/standalone_main.qml
+        ui/View.qml
+        ui/CategorySection.qml
+        ui/DeviceCard.qml
+        ui/DriverDetailsPanel.qml
+        ui/DriverItem.qml
+        ui/ViewModelManager.qml
+        ui/DialogManager.qml
+        ui/DriverStateManager.qml
+    CPP_BACKING_LIBS
         mcp-qt-mhwd-objects
         Qt6::Core
         Qt6::Qml
         libmcp
         libmcp-mhwd
-)
-
-ecm_finalize_qml_module(mcp-qt-mhwd-qmlmodule
-    DESTINATION ${KDE_INSTALL_QMLDIR}
 )
 
 # ============================================================================
@@ -59,7 +63,7 @@ ecm_finalize_qml_module(mcp-qt-mhwd-qmlmodule
 
 add_executable(mcp-qt-mhwd
     standalone_main.cpp
-    mhwd.qrc
+    standalone.qrc
 )
 
 target_link_libraries(mcp-qt-mhwd

@@ -3,6 +3,7 @@
 # ============================================================================
 
 include(McpQtSettings)
+include(McpQmlModule)
 
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_AUTOMOC ON)

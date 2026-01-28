@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty(QStringLiteral("vm"), &viewModel);
 
-    engine.load(QUrl(QStringLiteral("qrc:/kernel-page/ui/standalone_main.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/kernel-standalone/ui/standalone_main.qml")));
 
     if (engine.rootObjects().isEmpty()) {
         qCritical() << QStringLiteral("Failed to load QML");

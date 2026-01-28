@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     qmlRegisterType<MhwdViewModel>("org.manjaro.mcp.mhwd", 1, 0, "MhwdViewModel");
 
     QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/mhwd/ui/standalone_main.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/mhwd-standalone/ui/standalone_main.qml")));
 
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "Failed to load QML";

@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/mhwd-standalone">
+        <file>ui/standalone_main.qml</file>
+        <file>ui/UIManager.qml</file>
+        <file>ui/ErrorDialog.qml</file>
+        <file>ui/View.qml</file>
+        <file>ui/CategorySection.qml</file>
+        <file>ui/DeviceCard.qml</file>
+        <file>ui/DriverDetailsPanel.qml</file>
+        <file>ui/DriverItem.qml</file>
+        <file>ui/ViewModelManager.qml</file>
+        <file>ui/DialogManager.qml</file>
+        <file>ui/DriverStateManager.qml</file>
+    </qresource>
+    <qresource prefix="/assets">
+        <file alias="amd-svgrepo-com.svg">assets/amd-svgrepo-com.svg</file>
+        <file alias="nvidia-svgrepo-com.svg">assets/nvidia-svgrepo-com.svg</file>
+        <file alias="intel-svgrepo-com.svg">assets/intel-svgrepo-com.svg</file>
+    </qresource>
+</RCC>

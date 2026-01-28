@@ -21,7 +21,7 @@ public:
     static void registerTypes(const char *uri);
 };
 
-static constexpr char ModuleUrl[] = "qrc:/kernel-page/package/contents/ui/View.qml";
+static constexpr char ModuleUrl[] = "qrc:/qt/qml/org/manjaro/mcp/kernel/View.qml";
 static constexpr char ModuleName[] = "Kernel";
 static constexpr char ModuleDescription[] = "Description";
 static constexpr char ModuleIcon[] = "preferences-system-linux";
