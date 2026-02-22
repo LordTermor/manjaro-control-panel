@@ -38,17 +38,13 @@ mcp_add_qml_module(
     URI "org.manjaro.mcp.mhwd"
     DOMAIN mhwd
     QML_FILES
-        ui/UIManager.qml
-        ui/ErrorDialog.qml
         ui/standalone_main.qml
         ui/View.qml
         ui/CategorySection.qml
         ui/DeviceCard.qml
         ui/DriverDetailsPanel.qml
         ui/DriverItem.qml
-        ui/ViewModelManager.qml
-        ui/DialogManager.qml
-        ui/DriverStateManager.qml
+        ui/main.qml
     CPP_BACKING_LIBS
         mcp-qt-mhwd-objects
         Qt6::Core

@@ -47,7 +47,7 @@ Kirigami.AbstractCard {
             badgeColor: !!root.driverData?.openSource ? "#3498db" : "#e97517"
         }
          Kirigami.Icon {
-            source: "qrc:/mhwd/assets/nvidia-svgrepo-com.svg"
+            source: "qrc:/assets/nvidia-svgrepo-com.svg"
             color: Kirigami.Theme.textColor
             isMask: true
             visible: root.driverData?.name.includes("nvidia")
@@ -57,7 +57,7 @@ Kirigami.AbstractCard {
         }
 
         Kirigami.Icon {
-            source: "qrc:/mhwd/assets/amd-svgrepo-com.svg"
+            source: "qrc:/assets/amd-svgrepo-com.svg"
             color: Kirigami.Theme.textColor
             isMask: true
             visible: root.driverData?.name.includes("amd")
@@ -67,7 +67,7 @@ Kirigami.AbstractCard {
         }
 
         Kirigami.Icon {
-            source: "qrc:/mhwd/assets/intel-svgrepo-com.svg"
+            source: "qrc:/assets/intel-svgrepo-com.svg"
             color: Kirigami.Theme.textColor
             isMask: true
             visible: root.driverData?.name.includes("intel")
