@@ -49,6 +49,8 @@ target_link_libraries(libmcp
 target_include_directories(libmcp
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${libcoro_SOURCE_DIR}/include
+        ${libcoro_BINARY_DIR}/include
 )
 
 install(TARGETS libmcp COMPONENT Runtime)
