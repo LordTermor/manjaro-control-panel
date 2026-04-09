@@ -124,13 +124,16 @@ ColumnLayout {
 
         property int calculatedHeight: 0
 
+        readonly property int columnCount: Math.min(root.deviceCount, Math.max(1, Math.floor((width + spacing) / (280 + spacing))))
+        readonly property real cardWidth: (width - spacing * (columnCount - 1)) / columnCount
+
         Repeater {
             model: root.categoryDevices
 
             delegate: DeviceCard {
                 required property var modelData
 
-                width: Math.max(280, Math.min(400, (deviceGrid.width - deviceGrid.spacing * 2) / 3))
+                width: deviceGrid.cardWidth
                 height: deviceGrid.calculatedHeight
                 
                 onImplicitHeightChanged: {
