@@ -48,23 +48,23 @@ auto not_in_set(const std::unordered_set<std::string>& names) {
 
 ConfigProvider::ConfigProvider(const DeviceProvider& device_provider)
     : device_provider_(device_provider)
+    , available_pci_(load_configs_from_dir(c_pci_config_dir, BusType::PCI))
+    , available_usb_(load_configs_from_dir(c_usb_config_dir, BusType::USB))
+    , installed_pci_(load_configs_from_dir(c_pci_database_dir, BusType::PCI))
+    , installed_usb_(load_configs_from_dir(c_usb_database_dir, BusType::USB))
 {
 }
 
 Task<ConfigVectorResult>
 ConfigProvider::get_available_configs(BusType type) const
 {
-
-    const auto config_dir = (type == BusType::USB) ? c_usb_config_dir : c_pci_config_dir;
-    co_return load_configs_from_dir(config_dir, type);
+    co_return available_configs(type);
 }
 
 Task<ConfigVectorResult>
 ConfigProvider::get_installed_configs(BusType type) const
 {
-
-    const auto config_dir = (type == BusType::USB) ? c_usb_database_dir : c_pci_database_dir;
-    co_return load_configs_from_dir(config_dir, type);
+    co_return installed_configs(type);
 }
 
 Task<ConfigResult>
@@ -217,7 +217,7 @@ ConfigProvider::find_required_by(const Config& config, BusType type) const
 }
 
 ConfigVectorResult
-ConfigProvider::load_configs_from_dir(const fs::path& dir, BusType type) const
+ConfigProvider::load_configs_from_dir(const fs::path& dir, BusType type)
 {
     if (!fs::exists(dir)) {
         return std::unexpected(Error::InvalidPath);
@@ -237,7 +237,7 @@ ConfigProvider::load_configs_from_dir(const fs::path& dir, BusType type) const
 }
 
 std::vector<fs::path>
-ConfigProvider::find_config_files(const fs::path& dir) const
+ConfigProvider::find_config_files(const fs::path& dir)
 {
     std::vector<fs::path> files;
 
@@ -252,6 +252,24 @@ ConfigProvider::find_config_files(const fs::path& dir) const
     }
 
     return files;
+}
+
+const ConfigVectorResult&
+ConfigProvider::available_configs(BusType type) const
+{
+    return (type == BusType::USB) ? available_usb_ : available_pci_;
+}
+
+const ConfigVectorResult&
+ConfigProvider::installed_configs(BusType type) const
+{
+    return (type == BusType::USB) ? installed_usb_ : installed_pci_;
+}
+
+void ConfigProvider::reload_installed()
+{
+    installed_pci_ = load_configs_from_dir(c_pci_database_dir, BusType::PCI);
+    installed_usb_ = load_configs_from_dir(c_usb_database_dir, BusType::USB);
 }
 
 } // namespace mcp::mhwd

@@ -30,7 +30,8 @@ constexpr std::string_view c_config_filename = "MHWDCONFIG";
 /**
  * Driver configuration provider.
  * 
- * Manages driver configuration queries and device-to-driver matching.
+ * Parses all MHWDCONFIG files eagerly on construction. Subsequent queries
+ * operate purely in-memory. Call reload_installed() after transactions.
  * Does NOT handle transactions - use mhwd::build_install/build_remove for that.
  * 
  * Usage:
@@ -82,6 +83,14 @@ public:
     [[nodiscard]] Task<ConfigVector>
     find_matching_configs_for_device(const Device& device) const;
 
+    // === Reload ===
+
+    /**
+     * Re-read installed configs from disk.
+     * Call after install/remove transactions complete.
+     */
+    void reload_installed();
+
     // === Dependency analysis ===
 
     /**
@@ -105,11 +114,23 @@ public:
 private:
     const DeviceProvider& device_provider_;
 
-    [[nodiscard]] ConfigVectorResult
-    load_configs_from_dir(const std::filesystem::path& dir, BusType type) const;
+    // Eagerly loaded on construction
+    ConfigVectorResult available_pci_;
+    ConfigVectorResult available_usb_;
+    ConfigVectorResult installed_pci_;
+    ConfigVectorResult installed_usb_;
 
-    [[nodiscard]] std::vector<std::filesystem::path>
-    find_config_files(const std::filesystem::path& dir) const;
+    [[nodiscard]] const ConfigVectorResult&
+    available_configs(BusType type) const;
+
+    [[nodiscard]] const ConfigVectorResult&
+    installed_configs(BusType type) const;
+
+    [[nodiscard]] static ConfigVectorResult
+    load_configs_from_dir(const std::filesystem::path& dir, BusType type);
+
+    [[nodiscard]] static std::vector<std::filesystem::path>
+    find_config_files(const std::filesystem::path& dir);
 };
 
 } // namespace mcp::mhwd
