@@ -7,5 +7,8 @@
     <qresource prefix="/assets">
         <file alias="icon.svg">../data/assets/icon.svg</file>
         <file alias="mascot.svg">../data/assets/mascot.svg</file>
+        <file alias="nvidia-svgrepo-com.svg">../mhwd/assets/nvidia-svgrepo-com.svg</file>
+        <file alias="amd-svgrepo-com.svg">../mhwd/assets/amd-svgrepo-com.svg</file>
+        <file alias="intel-svgrepo-com.svg">../mhwd/assets/intel-svgrepo-com.svg</file>
     </qresource>
 </RCC>
