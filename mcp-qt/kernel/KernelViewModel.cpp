@@ -181,8 +181,8 @@ KernelData KernelViewModel::recommendedKernelData() const
 void KernelViewModel::fetchAndUpdateKernels()
 {
     // Launch async kernel fetching with QCoro
-    [this]() -> QCoro::Task<void> {
-        auto result = co_await m_provider.get_kernels();
+    [](KernelViewModel* self) -> QCoro::Task<void> {
+        auto result = co_await self->m_provider.get_kernels();
 
         if (!result) {
             qWarning() << "Failed to fetch kernels:" << static_cast<int>(result.error());
@@ -220,21 +220,21 @@ void KernelViewModel::fetchAndUpdateKernels()
         }
 
         bool changed = false;
-        if (m_inUseKernelData != newInUseData) {
-            m_inUseKernelData = newInUseData;
+        if (self->m_inUseKernelData != newInUseData) {
+            self->m_inUseKernelData = newInUseData;
             changed = true;
         }
-        if (m_recommendedKernelData != newRecommendedData) {
-            m_recommendedKernelData = newRecommendedData;
+        if (self->m_recommendedKernelData != newRecommendedData) {
+            self->m_recommendedKernelData = newRecommendedData;
             changed = true;
         }
         
         if (changed) {
-            Q_EMIT kernelsDataChanged();
+            Q_EMIT self->kernelsDataChanged();
         }
 
-        m_model.setKernels(kernels_copy);
-    }();
+        self->m_model.setKernels(kernels_copy);
+    }(this);
 }
 
 } // namespace mcp::qt::kernel
