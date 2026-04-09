@@ -35,6 +35,8 @@ QCoro::Task<void> MhwdViewModel::init()
 
 QCoro::QmlTask MhwdViewModel::refreshDevices()
 {
+    // Installed state may have changed after a transaction
+    m_configProvider->reload_installed();
     return populateCategories();
 }
 
@@ -147,9 +149,7 @@ QCoro::Task<DeviceData> MhwdViewModel::createDeviceData(const mcp::mhwd::Device&
 
     auto drivers = co_await findDrivers(device);
     data.drivers = drivers;
-
-    auto configs = co_await m_configProvider->find_matching_configs_for_device(device);
-    data.hasDrivers = !configs.empty();
+    data.hasDrivers = !drivers.isEmpty();
     
     co_return data;
 }
