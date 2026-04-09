@@ -39,26 +39,6 @@ mcp_add_qml_module(
         mcp-qt-common
 )
 
-# Standalone QML executable
-if(MCP_BUILD_QT)
-    add_executable(mcp-qt-kernels standalone_main.cpp standalone.qrc)
-
-    target_link_libraries(mcp-qt-kernels
-        PRIVATE
-        mcp-qt-kernel
-        libmcp-kernel
-        mcp-qt-common
-        Qt6::Quick
-        Qt6::Qml
-    )
-
-    target_compile_definitions(mcp-qt-kernels PRIVATE
-        MCP_VERSION="${MCP_VERSION}"
-    )
-
-    install(TARGETS mcp-qt-kernels COMPONENT Standalone)
-endif()
-
 # Classic Qt Widgets standalone executable
 if(MCP_BUILD_QT_CLASSIC)
     add_executable(mcp-qt-classic

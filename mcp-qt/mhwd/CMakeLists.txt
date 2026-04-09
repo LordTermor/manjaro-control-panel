@@ -53,33 +53,6 @@ mcp_add_qml_module(
         libmcp-mhwd
 )
 
-# ============================================================================
-# Standalone executable for testing/development
-# ============================================================================
-
-add_executable(mcp-qt-mhwd
-    standalone_main.cpp
-    standalone.qrc
-)
-
-target_link_libraries(mcp-qt-mhwd
-    PRIVATE
-        mcp-qt-mhwd-objects
-        Qt6::Quick
-        Qt6::QuickControls2
-        Qt6::Qml
-        KF6::I18n
-        KF6::CoreAddons
-        libmcp
-        libmcp-mhwd
-)
-
-set_property(TARGET mcp-qt-mhwd PROPERTY CXX_STANDARD 23)
-
-install(TARGETS mcp-qt-mhwd
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-    COMPONENT Standalone
-)
 
 # ============================================================================
 # KCM module integration

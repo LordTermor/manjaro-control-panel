@@ -32,6 +32,10 @@ add_subdirectory(kernel)
 add_subdirectory(mhwd)
 add_subdirectory(about)
 
+if(MCP_BUILD_QT)
+    add_subdirectory(shell)
+endif()
+
 add_subdirectory(transaction-agent)
 
 # Install System Settings category
