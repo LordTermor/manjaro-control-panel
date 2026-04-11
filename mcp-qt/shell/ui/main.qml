@@ -33,7 +33,7 @@ Kirigami.ApplicationWindow {
             QQC2.ItemDelegate {
                 Layout.fillWidth: true
                 text: qsTr("Kernel Manager")
-                icon.name: "chip"
+                icon.name: "preferences-system-linux"
                 highlighted: root.__activePage === "kernel"
 
                 onClicked: {
@@ -44,7 +44,7 @@ Kirigami.ApplicationWindow {
             QQC2.ItemDelegate {
                 Layout.fillWidth: true
                 text: qsTr("Hardware Configuration")
-                icon.name: "computer"
+                icon.name: "preferences-system-performance"
                 highlighted: root.__activePage === "hardware"
 
                 onClicked: {

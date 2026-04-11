@@ -58,7 +58,7 @@ Kirigami.Page {
         },
         Kirigami.Action {
             text: qsTr("PCI Devices")
-            icon.name: "expansion-card"
+            icon.name: "show-gpu-effects-symbolic"
             checkable: true
             checked: root.busTypeFilter === "pci"
             onTriggered: root.busTypeFilter = "pci"
