@@ -62,7 +62,7 @@ void KernelViewModel::installKernel(const KernelData &kernelData)
     QString kernelName = kernelData.name;
     setCurrentTransactionKernelName(kernelName);
     
-    [this, kernelName]() -> QCoro::Task<void> {
+    [](KernelViewModel* self, QString kernelName) -> QCoro::Task<void> {
         auto cmd_result = co_await mcp::kernel::build_install(
             kernelName.toStdString(),
             true,  // with_headers
@@ -70,25 +70,25 @@ void KernelViewModel::installKernel(const KernelData &kernelData)
         );
         
         if (!cmd_result) {
-            setCurrentTransactionKernelName(QString{});
+            self->setCurrentTransactionKernelName(QString{});
             
             using mcp::kernel::TransactionError;
             switch (cmd_result.error()) {
                 case TransactionError::UpdatesPending:
-                    Q_EMIT updatesPendingError();
+                    Q_EMIT self->updatesPendingError();
                     break;
                     
                 case TransactionError::KernelNotFound:
-                    Q_EMIT transactionError(
-                        tr("Kernel Not Found"),
-                        tr("The kernel package '%1' could not be found in repositories.").arg(kernelName)
+                    Q_EMIT self->transactionError(
+                        self->tr("Kernel Not Found"),
+                        self->tr("The kernel package '%1' could not be found in repositories.").arg(kernelName)
                     );
                     break;
                     
                 default:
-                    Q_EMIT transactionError(
-                        tr("Installation Error"),
-                        tr("Failed to prepare kernel installation. Error code: %1\n\n"
+                    Q_EMIT self->transactionError(
+                        self->tr("Installation Error"),
+                        self->tr("Failed to prepare kernel installation. Error code: %1\n\n"
                            "This is unexpected. Please report this to developers.")
                            .arg(static_cast<int>(cmd_result.error()))
                     );
@@ -97,8 +97,8 @@ void KernelViewModel::installKernel(const KernelData &kernelData)
             co_return;
         }
         
-        m_transactionLauncher.launchCommand(*cmd_result);
-    }();
+        self->m_transactionLauncher.launchCommand(*cmd_result);
+    }(this, kernelName);
 }
 
 void KernelViewModel::removeKernel(const KernelData &kernelData)
@@ -106,7 +106,7 @@ void KernelViewModel::removeKernel(const KernelData &kernelData)
     QString kernelName = kernelData.name;
     setCurrentTransactionKernelName(kernelName);
     
-    [this, kernelName]() -> QCoro::Task<void> {
+    [](KernelViewModel* self, QString kernelName) -> QCoro::Task<void> {
         auto cmd_result = co_await mcp::kernel::build_remove(
             kernelName.toStdString(),
             true,   // with_headers
@@ -115,29 +115,29 @@ void KernelViewModel::removeKernel(const KernelData &kernelData)
         );
         
         if (!cmd_result) {
-            setCurrentTransactionKernelName(QString{});
+            self->setCurrentTransactionKernelName(QString{});
             
             using mcp::kernel::TransactionError;
             switch (cmd_result.error()) {
                 case TransactionError::KernelInUse:
-                    Q_EMIT transactionError(
-                        tr("Kernel In Use"),
-                        tr("Cannot remove kernel '%1' because it is currently running.\n\n"
+                    Q_EMIT self->transactionError(
+                        self->tr("Kernel In Use"),
+                        self->tr("Cannot remove kernel '%1' because it is currently running.\n\n"
                            "Please boot into a different kernel first.").arg(kernelName)
                     );
                     break;
                     
                 case TransactionError::KernelNotFound:
-                    Q_EMIT transactionError(
-                        tr("Kernel Not Found"),
-                        tr("The kernel package '%1' is not installed.").arg(kernelName)
+                    Q_EMIT self->transactionError(
+                        self->tr("Kernel Not Found"),
+                        self->tr("The kernel package '%1' is not installed.").arg(kernelName)
                     );
                     break;
                     
                 default:
-                    Q_EMIT transactionError(
-                        tr("Removal Error"),
-                        tr("Failed to prepare kernel removal. Error code: %1\n\n"
+                    Q_EMIT self->transactionError(
+                        self->tr("Removal Error"),
+                        self->tr("Failed to prepare kernel removal. Error code: %1\n\n"
                            "This is unexpected. Please report this to developers.")
                            .arg(static_cast<int>(cmd_result.error()))
                     );
@@ -146,8 +146,8 @@ void KernelViewModel::removeKernel(const KernelData &kernelData)
             co_return;
         }
         
-        m_transactionLauncher.launchCommand(*cmd_result);
-    }();
+        self->m_transactionLauncher.launchCommand(*cmd_result);
+    }(this, kernelName);
 }
 
 common::TransactionAgentLauncher *KernelViewModel::transactionLauncher()
